@@ -37,10 +37,37 @@ const addOrUpdateItem = (newItem) => {
     return [...items]; // Return a new array to trigger re-renders
 };
 
+// Function to delete an item by ID
+const deleteItem = (itemId) => {
+    items = items.filter(item => item.id !== itemId);
+    return [...items];
+};
+
+// Function to update an existing item
+const updateItem = (updatedItem) => {
+    const index = items.findIndex(item => item.id === updatedItem.id);
+    if (index !== -1) {
+        items[index] = { ...items[index], ...updatedItem };
+    }
+    return [...items];
+};
+
+// Function to get a single item by ID
+const getItemById = (itemId) => {
+    return items.find(item => item.id === itemId);
+};
+
 // Function to reset to initial data (for testing)
 const resetItems = () => {
     items = [...initialItems];
     return [...items];
 };
 
-export { getItems, addOrUpdateItem, resetItems };
+export { 
+    getItems, 
+    getItemById,
+    addOrUpdateItem, 
+    updateItem,
+    deleteItem,
+    resetItems 
+};

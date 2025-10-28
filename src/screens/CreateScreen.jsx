@@ -1,17 +1,60 @@
-import { StyleSheet, Text, View, TextInput, Pressable, Alert, FlatList, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, TextInput, Pressable, Alert, ScrollView } from 'react-native';
 import { useState, useEffect } from 'react';
-import { getItems } from '../data/itemsData';
+import { getItems, getItemById, updateItem, deleteItem } from '../data/itemsData';
 
 const CreateScreen = ({ onAddItem }) => {
     const [itemName, setItemName] = useState('');
     const [stock, setStock] = useState('');
     const [unit, setUnit] = useState('');
     const [allItems, setAllItems] = useState([]);
+    const [editingItem, setEditingItem] = useState(null);
 
     // Load all items when component mounts
     useEffect(() => {
         setAllItems(getItems());
     }, []);
+
+    const resetForm = () => {
+        setItemName('');
+        setStock('');
+        setUnit('');
+        setEditingItem(null);
+    };
+
+    const handleEdit = (itemId) => {
+        const itemToEdit = getItemById(itemId);
+        if (itemToEdit) {
+            setItemName(itemToEdit.name);
+            setStock(itemToEdit.stock.toString());
+            setUnit(itemToEdit.unit);
+            setEditingItem(itemToEdit);
+        }
+    };
+
+    const handleDelete = (itemId) => {
+        Alert.alert(
+            'Delete Item',
+            'Are you sure you want to delete this item?',
+            [
+                {
+                    text: 'Cancel',
+                    style: 'cancel',
+                },
+                {
+                    text: 'Delete',
+                    style: 'destructive',
+                    onPress: () => {
+                        const updatedItems = deleteItem(itemId);
+                        setAllItems(updatedItems);
+                        if (editingItem && editingItem.id === itemId) {
+                            resetForm();
+                        }
+                    },
+                },
+            ],
+            { cancelable: false }
+        );
+    };
 
     const handleSubmit = () => {
         // Basic validation
@@ -28,27 +71,30 @@ const CreateScreen = ({ onAddItem }) => {
             return;
         }
 
-        // Create new item object
-        const newItem = {
-            name: itemName.trim(),
-            stock: parseInt(stock, 10),
-            unit: unit.trim().toLowerCase()
-        };
-
-            // Call the parent component's handler
-        onAddItem(newItem);
+        if (editingItem) {
+            // Update existing item
+            const updatedItem = {
+                ...editingItem,
+                name: itemName.trim(),
+                stock: parseInt(stock, 10),
+                unit: unit.trim().toLowerCase()
+            };
+            updateItem(updatedItem);
+            setAllItems(getItems()); // Update the items list after update
+            Alert.alert('Success', 'Item updated successfully!');
+        } else {
+            // Add new item
+            const newItem = {
+                name: itemName.trim(),
+                stock: parseInt(stock, 10),
+                unit: unit.trim().toLowerCase()
+            };
+            onAddItem(newItem);
+            setAllItems(getItems()); // Update the items list after add
+            Alert.alert('Success', 'Item added successfully!');
+        }
         
-        // Update the items list
-        const updatedItems = getItems();
-        setAllItems(updatedItems);
-
-        // Reset form
-        setItemName('');
-        setStock('');
-        setUnit('');
-
-        // Show success message
-        Alert.alert('Success', 'Item added successfully!');
+        resetForm();
     };
 
     return (
@@ -88,12 +134,28 @@ const CreateScreen = ({ onAddItem }) => {
                     {allItems.length > 0 ? (
                         allItems.map((item) => (
                             <View key={item.id.toString()} style={styles.itemRow}>
-                                <Text style={styles.itemNameText}>
-                                    {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
-                                </Text>
-                                <Text style={styles.itemDetail}>
-                                    {item.stock} {item.unit}
-                                </Text>
+                                <View style={styles.itemInfo}>
+                                    <Text style={styles.itemNameText}>
+                                        {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
+                                    </Text>
+                                    <Text style={styles.itemDetail}>
+                                        {item.stock} {item.unit}
+                                    </Text>
+                                </View>
+                                <View style={styles.actions}>
+                                    <Pressable 
+                                        style={[styles.button, styles.editButton]}
+                                        onPress={() => handleEdit(item.id)}
+                                    >
+                                        <Text style={styles.buttonText}>Edit</Text>
+                                    </Pressable>
+                                    <Pressable 
+                                        style={[styles.button, styles.deleteButton]}
+                                        onPress={() => handleDelete(item.id)}
+                                    >
+                                        <Text style={styles.buttonText}>Delete</Text>
+                                    </Pressable>
+                                </View>
                             </View>
                         ))
                     ) : (
@@ -104,6 +166,7 @@ const CreateScreen = ({ onAddItem }) => {
         </View>
     );
 };
+
 
 export default CreateScreen
 
@@ -124,6 +187,13 @@ const styles = StyleSheet.create({
         shadowRadius: 4,
         elevation: 2,
     },
+    itemInfo: {
+        flex: 1,
+    },
+    actions: {
+        flexDirection: 'row',
+        marginLeft: 10,
+    },
     scrollView: {
         flexGrow: 1,
     },
@@ -142,7 +212,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#f0f0f0',
+        borderBottomColor: '#eee',
     },
     itemNameText: {
         fontSize: 16,
@@ -176,15 +246,22 @@ const styles = StyleSheet.create({
     },
     button: {
         backgroundColor: '#2a7905ff',
-        paddingVertical: 14,
-        borderRadius: 8,
-        marginTop: 5,
-        elevation: 2,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 4,
+        marginLeft: 8,
+        minWidth: 70,
+    },
+    editButton: {
+        backgroundColor: '#2a5e8d',
+    },
+    deleteButton: {
+        backgroundColor: '#d32f2f',
     },
     buttonText: {
         color: '#ffffff',
         textAlign: 'center',
         fontWeight: 'bold',
-        fontSize: 16,
+        fontSize: 14,
     },
 })
