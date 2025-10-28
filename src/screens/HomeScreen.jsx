@@ -39,7 +39,7 @@ const HomeScreen = () => {
                     style={[styles.button, view === 2 && { backgroundColor: "#194b02ff" }]} 
                     onPress={() => setView(2)}
                 >
-                    <Text style={styles.btnText}>Create</Text>
+                    <Text style={styles.btnText}>Add Items</Text>
                 </Pressable>
             </View>
 
