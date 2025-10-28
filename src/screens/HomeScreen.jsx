@@ -44,7 +44,7 @@ const HomeScreen = () => {
             </View>
 
             {view === 0 && <AllItems data={items} />}
-            {view === 1 && <AllItems data={items.filter(item => item.stock <= 3)} />}
+            {view === 1 && <AllItems data={items.filter(item => item.stock <= 7)} />}
             {view === 2 && <CreateScreen onAddItem={handleAddItem} />}
         </View>
     );

@@ -25,7 +25,7 @@ const AllItems = ({ data }) => {
           <View 
             style={[
               styles.itemContainer, 
-              { backgroundColor: item.stock <= 3 ? '#fff3f3' : '#f8fff8' }
+              { backgroundColor: item.stock <= 7 ? '#fff3f3' : '#f8fff8' }
             ]}
           >
             <View style={styles.itemContent}>
@@ -34,7 +34,7 @@ const AllItems = ({ data }) => {
                 <Text 
                   style={[
                     styles.stockText,
-                    item.stock <= 3 && styles.lowStockText
+                    item.stock <= 7 && styles.lowStockText
                   ]}
                 >
                   {item.stock}
@@ -44,7 +44,7 @@ const AllItems = ({ data }) => {
                 </Text>
               </View>
             </View>
-            {item.stock <= 3 && (
+            {item.stock <= 7 && (
               <Text style={styles.warningText}>Low Stock!</Text>
             )}
           </View>
