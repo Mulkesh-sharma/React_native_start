@@ -193,6 +193,7 @@ const styles = StyleSheet.create({
     actions: {
         flexDirection: 'row',
         marginLeft: 10,
+        gap: 8,
     },
     scrollView: {
         flexGrow: 1,
@@ -249,7 +250,6 @@ const styles = StyleSheet.create({
         paddingVertical: 8,
         paddingHorizontal: 12,
         borderRadius: 4,
-        marginLeft: 8,
         minWidth: 70,
     },
     editButton: {
