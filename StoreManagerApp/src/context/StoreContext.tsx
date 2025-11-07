@@ -2,13 +2,15 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { products as dummyProducts } from '../data/dummyProducts';
 
-type Product = { id: string; name: string; price: number };
-type CartItem = Product & { quantity: number };
+export type Product = { id: string; name: string; price: number; quantity?: number };
+export type CartItem = Product & { quantity: number };
 
 interface StoreContextType {
     products: Product[];
     cart: CartItem[];
     addProduct: (name: string, price: number) => void;
+    updateProduct: (id: string, updatedProduct: Product) => void;
+    deleteProduct: (id: string) => void;
     addToCart: (product: Product) => void;
     removeFromCart: (id: string) => void;
     clearCart: () => void;
@@ -20,7 +22,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     const [products, setProducts] = useState<Product[]>([]);
     const [cart, setCart] = useState<CartItem[]>([]);
 
-    // Load data from AsyncStorage
+    // Load products & cart from storage
     useEffect(() => {
         const loadData = async () => {
             try {
@@ -28,7 +30,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
                 const savedCart = await AsyncStorage.getItem('cart');
 
                 if (savedProducts) setProducts(JSON.parse(savedProducts));
-                else setProducts(dummyProducts); // if first time, load dummy
+                else setProducts(dummyProducts);
 
                 if (savedCart) setCart(JSON.parse(savedCart));
             } catch (e) {
@@ -38,7 +40,7 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
         loadData();
     }, []);
 
-    // Save products & cart when changed
+    // Save to storage
     useEffect(() => {
         AsyncStorage.setItem('products', JSON.stringify(products)).catch(console.log);
     }, [products]);
@@ -48,8 +50,16 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
     }, [cart]);
 
     const addProduct = (name: string, price: number) => {
-        const newProduct = { id: Date.now().toString(), name, price };
+        const newProduct: Product = { id: Date.now().toString(), name, price, quantity: 10 };
         setProducts(prev => [...prev, newProduct]);
+    };
+
+    const updateProduct = (id: string, updated: Product) => {
+        setProducts(prev => prev.map(p => (p.id === id ? updated : p)));
+    };
+
+    const deleteProduct = (id: string) => {
+        setProducts(prev => prev.filter(p => p.id !== id));
     };
 
     const addToCart = (product: Product) => {
@@ -69,7 +79,16 @@ export const StoreProvider = ({ children }: { children: ReactNode }) => {
 
     return (
         <StoreContext.Provider
-            value={{ products, cart, addProduct, addToCart, removeFromCart, clearCart }}
+            value={{
+                products,
+                cart,
+                addProduct,
+                updateProduct,
+                deleteProduct,
+                addToCart,
+                removeFromCart,
+                clearCart,
+            }}
         >
             {children}
         </StoreContext.Provider>

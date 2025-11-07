@@ -1,49 +1,57 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, FlatList, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { useStore } from '../context/StoreContext';
 
 const AdminScreen = () => {
-    const { products, addProduct } = useStore();
-    const [name, setName] = useState('');
-    const [price, setPrice] = useState('');
+    const { products, deleteProduct } = useStore();
+    const navigation = useNavigation<any>();
 
-    const handleAdd = () => {
-        if (!name || !price) return alert('Enter both name and price');
-        addProduct(name, parseFloat(price));
-        setName('');
-        setPrice('');
+    const handleDelete = (id: string) => {
+        Alert.alert('Confirm Delete', 'Are you sure you want to delete this product?', [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Delete', onPress: () => deleteProduct(id), style: 'destructive' },
+        ]);
     };
 
     return (
         <View style={styles.container}>
             <Text style={styles.title}>Admin Panel 🛠️</Text>
 
-            <TextInput
-                style={styles.input}
-                placeholder="Product Name"
-                placeholderTextColor="#888"
-                value={name}
-                onChangeText={setName}
-            />
-            <TextInput
-                style={styles.input}
-                placeholder="Price"
-                placeholderTextColor="#888"
-                keyboardType="numeric"
-                value={price}
-                onChangeText={setPrice}
-            />
-            <Button title="Add Product" onPress={handleAdd} />
+            <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => navigation.navigate('AddProduct')}
+            >
+                <Text style={styles.addText}>➕ Add New Product</Text>
+            </TouchableOpacity>
 
             <FlatList
                 data={products}
                 keyExtractor={item => item.id}
                 renderItem={({ item }) => (
-                    <Text style={styles.product}>
-                        {item.name} - ₹{item.price}
-                    </Text>
+                    <View style={styles.productCard}>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.name}>{item.name}</Text>
+                            <Text>₹{item.price}</Text>
+                        </View>
+
+                        <View style={styles.actions}>
+                            <TouchableOpacity
+                                onPress={() => navigation.navigate('EditProduct', { product: item })}
+                                style={[styles.button, { backgroundColor: '#007bff' }]}
+                            >
+                                <Text style={styles.btnText}>Edit</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => handleDelete(item.id)}
+                                style={[styles.button, { backgroundColor: '#dc3545' }]}
+                            >
+                                <Text style={styles.btnText}>Delete</Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
                 )}
-                style={{ marginTop: 20 }}
+                style={{ marginTop: 10 }}
             />
         </View>
     );
@@ -52,16 +60,30 @@ const AdminScreen = () => {
 export default AdminScreen;
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 16 },
-    title: { fontSize: 20, fontWeight: 'bold', marginBottom: 10 },
-    input: {
-        borderWidth: 1,
-        borderColor: '#ccc',
+    container: { flex: 1, padding: 16, backgroundColor: '#fff' },
+    title: { fontSize: 22, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' },
+    addButton: {
+        backgroundColor: '#28a745',
+        padding: 10,
         borderRadius: 8,
-        paddingHorizontal: 10,
-        paddingVertical: 8,
+        alignItems: 'center',
         marginBottom: 10,
-        color: '#000',
     },
-    product: { fontSize: 16, padding: 8, backgroundColor: '#f3f3f3', marginBottom: 5 },
+    addText: { color: '#fff', fontWeight: 'bold' },
+    productCard: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#f3f3f3',
+        padding: 10,
+        borderRadius: 8,
+        marginBottom: 8,
+    },
+    name: { fontSize: 16, fontWeight: '600' },
+    actions: { flexDirection: 'row', gap: 8 },
+    button: {
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+        borderRadius: 6,
+    },
+    btnText: { color: '#fff', fontWeight: 'bold' },
 });
