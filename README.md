@@ -149,11 +149,3 @@ Mulkesh Sharma
 🌐 [https://www.linkedin.com/in/mulkesh-sharma/]
 
 ⭐ If you find this project helpful, please consider giving it a star on GitHub!
-
-
-🏁 License
-This project is licensed under the MIT License — see the LICENSE file for details.
-
----
-
-Would you like me to add **GitHub badges** (like build status, tech used, and platform support) and **emoji icons for each section header** to make it look like a **top-rated GitHub repo** layout? It’ll make your README visually more attractive.
