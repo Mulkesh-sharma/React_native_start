@@ -12,6 +12,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import AppHeader from '../../components/AppHeader';
 import { useStore } from '../../context/StoreContext';
+import { globalStyles } from '../../styles/globalStyles';
 
 const HomeScreen = () => {
   const navigation = useNavigation<any>();
@@ -22,8 +23,11 @@ const HomeScreen = () => {
   return (
     <View style={styles.container}>
       <AppHeader isHome />
-      <ScrollView>
-      <Text style={styles.subtitle}>Quick overview of your inventory</Text>
+      <ScrollView 
+        style={globalStyles.scrollView}
+        contentContainerStyle={globalStyles.scrollContent}
+      >
+        <Text style={styles.subtitle}>Quick overview of your inventory</Text>
 
       {/* Loader */}
       {loadingProducts && (
@@ -97,83 +101,102 @@ export default HomeScreen;
 const styles = StyleSheet.create({
   container: { 
     flex: 1,
-    backgroundColor: '#fafafa',
+    backgroundColor: '#0f1115',
   },
 
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
+    paddingHorizontal: 8,
   },
 
   title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#007bff',
+    fontSize: 24,
+    fontWeight: '700',
+    color: '#ffffff',
   },
 
   iconBtn: {
-    padding: 6,
-    backgroundColor: '#eef6ff',
-    borderRadius: 8,
+    padding: 8,
+    backgroundColor: '#171a21',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#2a2f3a',
   },
 
   subtitle: {
     textAlign: 'center',
-    color: '#666',
-    marginBottom: 16,
-    fontSize: 14,
+    color: '#b6c0cf',
+    marginBottom: 20,
+    fontSize: 15,
+    paddingHorizontal: 16,
   },
 
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#171a21',
     width: '48%',
-    borderRadius: 12,
-    padding: 12,
+    borderRadius: 16,
+    padding: 16,
     alignItems: 'center',
     marginBottom: 16,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#2a2f3a',
   },
 
-  image: { width: 100, height: 100, borderRadius: 8, marginBottom: 10 },
+  image: { 
+    width: 100, 
+    height: 100, 
+    borderRadius: 12, 
+    marginBottom: 12,
+    backgroundColor: '#0f1115',
+  },
 
   name: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 15,
+    fontWeight: '600',
     textAlign: 'center',
-    color: '#333',
+    color: '#ffffff',
+    marginBottom: 4,
   },
 
   price: {
-    fontSize: 14,
-    color: '#007bff',
+    fontSize: 16,
+    color: '#4f8cff',
     fontWeight: '700',
-    marginTop: 4,
+    marginTop: 2,
   },
 
   stock: {
-    marginTop: 4,
-    fontSize: 12,
+    marginTop: 6,
+    fontSize: 13,
     fontWeight: '600',
   },
-  inStock: { color: 'green' },
-  lowStock: { color: '#d9534f' },
+  inStock: { color: '#4caf50' },
+  lowStock: { color: '#ff5252' },
 
   emptyText: {
     textAlign: 'center',
-    marginTop: 30,
-    color: '#888',
+    marginTop: 40,
+    color: '#b6c0cf',
+    fontSize: 15,
   },
 
   viewMore: {
-    backgroundColor: '#007bff',
-    paddingVertical: 12,
-    borderRadius: 10,
+    backgroundColor: '#4f8cff',
+    paddingVertical: 14,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 20,
+    margin: 16,
+    marginTop: 8,
+    borderWidth: 1,
+    borderColor: '#1b5e20',
   },
 
-  viewMoreText: { color: '#fff', fontWeight: 'bold' },
+  viewMoreText: { 
+    color: '#ffffff', 
+    fontWeight: '600',
+    fontSize: 15,
+  },
 });

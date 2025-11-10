@@ -1,31 +1,32 @@
-import React from "react";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Ionicons from "react-native-vector-icons/Ionicons";
-import { Text } from "react-native";
+import React from 'react';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 
-import HomeScreen from "../home/HomeScreen";
-import ProductsScreen from "../products/ProductsScreen";
-import AdminScreen from "../admin/AdminScreen";
-import DashboardScreen from "../dashboard/DashboardScreen";
-
-import { useAuth } from "../../context/AuthContext";
+import HomeScreen from '../home/HomeScreen';
+import ProductsScreen from '../products/ProductsScreen';
+import AdminScreen from '../admin/AdminScreen';
+import DashboardScreen from '../dashboard/DashboardScreen';
 
 const Tab = createBottomTabNavigator();
 
 const BottomTabs = () => {
-  const { logout } = useAuth();
-
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-
+        tabBarActiveTintColor: '#4f8cff',
+        tabBarInactiveTintColor: '#b6c0cf',
         tabBarStyle: {
-          backgroundColor: "#fff",
-          height: 60,
-          borderTopWidth: 0.4,
+          backgroundColor: '#171a21',
+          height: 65,
+          borderTopWidth: 1,
+          borderTopColor: '#2a2f3a',
+          paddingBottom: 16,
         },
-
+        tabBarLabelStyle: {
+          fontSize: 12,
+          marginBottom: 4,
+        },
         tabBarIcon: ({ color }) => {
           let icon = "home-outline";
 

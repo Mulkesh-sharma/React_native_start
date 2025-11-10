@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useStore } from '../../context/StoreContext';
+import { globalStyles } from '../../styles/globalStyles';
 
 const AddProductScreen = () => {
   const navigation = useNavigation<any>();
@@ -53,12 +54,15 @@ const AddProductScreen = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView>
+      <ScrollView
+        style={globalStyles.scrollView}
+        contentContainerStyle={globalStyles.scrollContent}
+      >
         <Text style={styles.title}>Add New Product</Text>
 
         <TextInput
           placeholder="Product Name"
-          placeholderTextColor="#999"
+          placeholderTextColor="#6b7280"
           value={name}
           onChangeText={setName}
           style={styles.input}
@@ -66,7 +70,7 @@ const AddProductScreen = () => {
 
         <TextInput
           placeholder="Price"
-          placeholderTextColor="#999"
+          placeholderTextColor="#6b7280"
           value={price}
           onChangeText={setPrice}
           keyboardType="numeric"
@@ -75,7 +79,7 @@ const AddProductScreen = () => {
 
         <TextInput
           placeholder="Quantity"
-          placeholderTextColor="#999"
+          placeholderTextColor="#6b7280"
           value={quantity}
           onChangeText={setQuantity}
           keyboardType="numeric"
@@ -88,7 +92,7 @@ const AddProductScreen = () => {
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color="#ffffff" />
           ) : (
             <Text style={styles.saveText}>Save Product</Text>
           )}
@@ -103,39 +107,44 @@ export default AddProductScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    padding: 16,
+    backgroundColor: '#0f1115',
   },
 
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    fontSize: 22,
+    fontWeight: '700',
+    marginVertical: 24,
     textAlign: 'center',
-    color: '#222',
+    color: '#ffffff',
   },
 
   input: {
-    backgroundColor: '#f4f4f4',
-    padding: 12,
-    borderRadius: 10,
-    marginBottom: 15,
+    backgroundColor: '#171a21',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#2a2f3a',
     fontSize: 16,
-    color: '#333',
+    color: '#ffffff',
+    marginHorizontal: 8,
   },
 
   saveBtn: {
-    backgroundColor: '#28a745',
-    paddingVertical: 14,
-    borderRadius: 10,
+    backgroundColor: '#4f8cff',
+    paddingVertical: 16,
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 8,
+    marginHorizontal: 8,
+    borderWidth: 1,
+    borderColor: '#1b5e20',
   },
 
   saveText: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: 'bold',
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

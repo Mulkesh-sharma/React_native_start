@@ -12,6 +12,7 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { Product } from '../../context/StoreContext';
 import { useStore } from '../../context/StoreContext';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import { globalStyles } from '../../styles/globalStyles';
 
 const ProductDetailScreen = () => {
   const route = useRoute<any>();
@@ -53,7 +54,10 @@ const ProductDetailScreen = () => {
 
   return (
     <View style={styles.container}>
-      <ScrollView>
+      <ScrollView 
+        style={globalStyles.scrollView}
+        contentContainerStyle={globalStyles.scrollContent}
+      >
         <Text style={styles.title}>{product.name}</Text>
 
         {/* Product Info Card */}
@@ -76,7 +80,7 @@ const ProductDetailScreen = () => {
             style={[styles.btn, styles.editBtn]}
             onPress={() => navigation.navigate('EditProduct', { product })}
           >
-            <Ionicons name="create-outline" size={20} color="#fff" />
+            <Ionicons name="create-outline" size={20} color="#4f8cff" />
             <Text style={styles.btnText}>Edit</Text>
           </TouchableOpacity>
 
@@ -86,10 +90,10 @@ const ProductDetailScreen = () => {
             disabled={loading}
           >
             {loading ? (
-              <ActivityIndicator color="#fff" />
+              <ActivityIndicator color="#ff5252" />
             ) : (
               <>
-                <Ionicons name="trash-outline" size={20} color="#fff" />
+                <Ionicons name="trash-outline" size={20} color="#ff5252" />
                 <Text style={styles.btnText}>Delete</Text>
               </>
             )}
@@ -103,62 +107,83 @@ const ProductDetailScreen = () => {
 export default ProductDetailScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: '#fff' },
+  container: { 
+    flex: 1, 
+    padding: 16, 
+    backgroundColor: '#0f1115' 
+  },
 
   title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#1a1a1a',
+    fontSize: 24,
+    fontWeight: '700',
+    marginVertical: 16,
+    color: '#ffffff',
+    textAlign: 'center',
   },
 
   infoCard: {
-    backgroundColor: '#f8f9fa',
-    padding: 18,
-    borderRadius: 12,
-    marginBottom: 20,
-    elevation: 2,
+    backgroundColor: '#171a21',
+    padding: 20,
+    borderRadius: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#2a2f3a',
   },
 
   label: {
     fontSize: 15,
-    color: '#555',
-    marginTop: 10,
+    color: '#b6c0cf',
+    marginTop: 12,
+    marginBottom: 4,
   },
 
   value: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#007bff',
+    fontWeight: '600',
+    color: '#4f8cff',
   },
 
   desc: {
     fontSize: 15,
-    color: '#444',
+    color: '#b6c0cf',
     marginBottom: 30,
-    lineHeight: 20,
+    lineHeight: 22,
+    marginHorizontal: 8,
   },
 
   btnRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    gap: 16,
+    marginHorizontal: 8,
+    marginBottom: 24,
   },
 
   btn: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
     gap: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 10,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 12,
+    borderWidth: 1,
   },
 
-  editBtn: { backgroundColor: '#007bff' },
-  deleteBtn: { backgroundColor: '#dc3545' },
+  editBtn: { 
+    backgroundColor: 'rgba(79, 140, 255, 0.2)',
+    borderColor: 'rgba(79, 140, 255, 0.4)',
+  },
+  
+  deleteBtn: { 
+    backgroundColor: 'rgba(220, 53, 69, 0.2)',
+    borderColor: 'rgba(220, 53, 69, 0.4)',
+  },
 
   btnText: {
-    color: '#fff',
+    color: '#ffffff',
     fontSize: 16,
-    fontWeight: '700',
+    fontWeight: '600',
   },
 });

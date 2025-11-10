@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useStore } from '../../context/StoreContext';
 import AppHeader from '../../components/AppHeader';
+import { globalStyles } from '../../styles/globalStyles';
 
 const ProductsScreen = () => {
   const navigation = useNavigation<any>();
@@ -42,7 +43,10 @@ const ProductsScreen = () => {
       {/* Header */}
       <AppHeader title="Products" />
 
-      <ScrollView>
+      <ScrollView 
+        style={globalStyles.scrollView}
+        contentContainerStyle={globalStyles.scrollContent}
+      >
         <Text style={styles.title}>All Products</Text>
 
         {/* Add Product Button */}
@@ -50,7 +54,7 @@ const ProductsScreen = () => {
           style={styles.addButton}
           onPress={() => navigation.navigate('AddProduct')}
         >
-          <Ionicons name="add-circle-outline" size={22} color="#fff" />
+          <Ionicons name="add-circle-outline" size={22} color="#ffffff" />
           <Text style={styles.addText}>Add Product</Text>
         </TouchableOpacity>
 
@@ -58,8 +62,8 @@ const ProductsScreen = () => {
         {loadingProducts && (
           <ActivityIndicator
             size="large"
-            color="#007bff"
-            style={{ marginTop: 20 }}
+            color="#4f8cff"
+            style={{ marginTop: 24 }}
           />
         )}
 
@@ -89,14 +93,14 @@ const ProductsScreen = () => {
                       navigation.navigate('EditProduct', { product: item })
                     }
                   >
-                    <Ionicons name="create-outline" size={18} color="#fff" />
+                    <Ionicons name="create-outline" size={18} color="#4f8cff" />
                   </TouchableOpacity>
 
                   <TouchableOpacity
                     style={[styles.actionBtn, styles.deleteBtn]}
                     onPress={() => handleDelete(item._id)}
                   >
-                    <Ionicons name="trash-outline" size={18} color="#fff" />
+                    <Ionicons name="trash-outline" size={18} color="#ff5252" />
                   </TouchableOpacity>
                 </View>
               </TouchableOpacity>
@@ -117,60 +121,100 @@ export default ProductsScreen;
 const styles = StyleSheet.create({
   container: { 
     flex: 1,
-    backgroundColor: '#fff' },
+    backgroundColor: '#0f1115',
+  },
 
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontWeight: '700',
     marginBottom: 16,
     textAlign: 'center',
-    color: '#007bff',
+    color: '#ffffff',
   },
 
   addButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    backgroundColor: '#28a745',
-    paddingVertical: 12,
-    borderRadius: 10,
     justifyContent: 'center',
+    gap: 8,
+    backgroundColor: '#4f8cff',
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginHorizontal: 16,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#1b5e20',
   },
 
-  addText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+  addText: { 
+    color: '#ffffff', 
+    fontSize: 16, 
+    fontWeight: '600' 
+  },
 
   card: {
     flexDirection: 'row',
-    backgroundColor: '#f7f7f7',
-    padding: 14,
+    backgroundColor: '#171a21',
+    padding: 16,
     borderRadius: 12,
+    marginHorizontal: 16,
     marginBottom: 12,
-    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#2a2f3a',
+    alignItems: 'center',
   },
 
-  name: { fontSize: 16, fontWeight: '700', color: '#222' },
-  price: { fontSize: 14, color: '#007bff', marginTop: 2 },
-  qty: { fontSize: 12, color: '#666', marginTop: 4 },
+  name: { 
+    fontSize: 16, 
+    fontWeight: '600', 
+    color: '#ffffff',
+    marginBottom: 4,
+  },
+  
+  price: { 
+    fontSize: 15, 
+    color: '#4f8cff', 
+    fontWeight: '600',
+  },
+  
+  qty: { 
+    fontSize: 13, 
+    color: '#b6c0cf', 
+    marginTop: 2,
+  },
 
   actionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
+    marginLeft: 'auto',
   },
 
   actionBtn: {
     padding: 8,
-    borderRadius: 8,
+    borderRadius: 20,
+    width: 36,
+    height: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 
-  editBtn: { backgroundColor: '#007bff' },
-  deleteBtn: { backgroundColor: '#dc3545' },
+  editBtn: { 
+    backgroundColor: 'rgba(79, 140, 255, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(79, 140, 255, 0.4)',
+  },
+  
+  deleteBtn: { 
+    backgroundColor: 'rgba(220, 53, 69, 0.2)',
+    borderWidth: 1,
+    borderColor: 'rgba(220, 53, 69, 0.4)',
+  },
 
   emptyText: {
     textAlign: 'center',
     marginTop: 40,
-    color: '#888',
-    fontSize: 16,
+    color: '#b6c0cf',
+    fontSize: 15,
   },
 });

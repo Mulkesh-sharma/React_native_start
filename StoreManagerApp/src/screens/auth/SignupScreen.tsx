@@ -53,7 +53,7 @@ const SignupScreen = () => {
         <Text style={styles.sub}>Your store, your control</Text>
 
         <View style={styles.inputBox}>
-          <Ionicons name="person-outline" size={20} color="#777" />
+          <Ionicons name="person-outline" size={18} color="#b6c0cf" />
           <TextInput
             style={styles.input}
             placeholder="Full Name"
@@ -64,7 +64,7 @@ const SignupScreen = () => {
         </View>
 
         <View style={styles.inputBox}>
-          <Ionicons name="mail-outline" size={20} color="#777" />
+          <Ionicons name="mail-outline" size={18} color="#b6c0cf" />
           <TextInput
             style={styles.input}
             placeholder="Email"
@@ -76,7 +76,7 @@ const SignupScreen = () => {
         </View>
 
         <View style={styles.inputBox}>
-          <Ionicons name="lock-closed-outline" size={20} color="#777" />
+          <Ionicons name="lock-closed-outline" size={18} color="#b6c0cf" />
           <TextInput
             style={styles.input}
             placeholder="Password"
@@ -88,8 +88,8 @@ const SignupScreen = () => {
           <TouchableOpacity onPress={() => setSecure(!secure)}>
             <Ionicons
               name={secure ? 'eye-off-outline' : 'eye-outline'}
-              size={20}
-              color="#777"
+              size={18}
+              color="#b6c0cf"
             />
           </TouchableOpacity>
         </View>
@@ -104,7 +104,7 @@ const SignupScreen = () => {
         >
           <Text style={styles.switchText}>
             Already have an account?{' '}
-            <Text style={{ color: '#4c6ef5' }}>Login</Text>
+            <Text style={{ color: '#4f8cff', fontWeight: '600' }}>Login</Text>
           </Text>
         </TouchableOpacity>
       </Animated.View>
@@ -117,65 +117,70 @@ export default SignupScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#eef2ff',
+    backgroundColor: '#0f1115',
     justifyContent: 'center',
     padding: 20,
   },
 
   card: {
-    backgroundColor: 'rgba(255,255,255,0.9)',
+    backgroundColor: '#171a21',
     padding: 26,
-    borderRadius: 22,
-    elevation: 10,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#2a2f3a',
   },
 
   heading: {
-    fontSize: 30,
-    fontWeight: '800',
+    fontSize: 28,
+    fontWeight: '700',
     textAlign: 'center',
-    color: '#4c6ef5',
+    color: '#ffffff',
+    marginBottom: 8,
   },
 
   sub: {
     textAlign: 'center',
-    color: '#777',
+    color: '#b6c0cf',
     marginBottom: 30,
+    fontSize: 14,
   },
 
   inputBox: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f1f3f5',
+    backgroundColor: '#0f1115',
     paddingHorizontal: 14,
     paddingVertical: 12,
     borderRadius: 12,
-    marginBottom: 14,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#2a2f3a',
   },
 
   input: {
     flex: 1,
     marginLeft: 10,
-    fontSize: 16,
-    color: '#000',
+    fontSize: 15,
+    color: '#ffffff',
   },
 
   button: {
-    backgroundColor: '#4c6ef5',
+    backgroundColor: '#4f8cff',
     paddingVertical: 14,
     borderRadius: 14,
     alignItems: 'center',
-    marginTop: 10,
+    marginTop: 8,
   },
 
   buttonText: {
-    color: '#fff',
-    fontSize: 17,
-    fontWeight: 'bold',
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '700',
   },
 
   switchText: {
     textAlign: 'center',
-    color: '#555',
+    color: '#b6c0cf',
     fontSize: 14,
   },
 });

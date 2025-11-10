@@ -217,7 +217,6 @@ export default function ProfileScreen() {
             </Text>
           </Pressable>
 
-          {/* ✅ LOGOUT BUTTON */}
           <Pressable onPress={handleLogout} style={styles.logoutBtn}>
             <Text style={styles.logoutText}>Logout</Text>
           </Pressable>
@@ -462,13 +461,13 @@ const styles = StyleSheet.create({
   modalBtnText: { color: 'white', fontWeight: '700' },
   logoutBtn: {
     marginTop: 12,
-    backgroundColor: '#d9534f',
+    backgroundColor: 'white',
     paddingVertical: 12,
     borderRadius: 12,
     alignItems: 'center',
   },
   logoutText: {
-    color: 'white',
+    color: '#171a21',
     fontWeight: '700',
     fontSize: 16,
   },

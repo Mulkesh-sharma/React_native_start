@@ -1,7 +1,8 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import { useNavigation, useRoute } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
+import { colors, globalStyles, spacing } from "../styles/globalStyles";
 
 interface Props {
   title?: string;        // screen name
@@ -45,14 +46,14 @@ export default AppHeader;
 const styles = StyleSheet.create({
   headerContainer: {
     height: 60,
-    backgroundColor: "#007bff",
-    paddingHorizontal: 15,
+    backgroundColor: colors.card,
+    paddingHorizontal: spacing.md,
     paddingTop: 15,
-    marginBottom: 10,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    elevation: 6,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
   },
 
   leftSection: {
@@ -61,16 +62,19 @@ const styles = StyleSheet.create({
   },
 
   backBtn: {
-    marginRight: 12,
+    marginRight: spacing.sm,
   },
 
   titleText: {
-    color: "#fff",
-    fontSize: 20,
+    ...globalStyles.text,
+    color: colors.text,
+    fontSize: 18,
     fontWeight: "700",
   },
 
   profileBtn: {
-    padding: 4,
+    padding: spacing.xs,
+    borderRadius: 20,
+    backgroundColor: colors.background,
   },
 });
