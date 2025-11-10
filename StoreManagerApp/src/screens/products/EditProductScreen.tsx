@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Product } from '../../context/StoreContext';
@@ -52,47 +53,49 @@ const ProductDetailScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{product.name}</Text>
+      <ScrollView>
+        <Text style={styles.title}>{product.name}</Text>
 
-      {/* Product Info Card */}
-      <View style={styles.infoCard}>
-        <Text style={styles.label}>Price:</Text>
-        <Text style={styles.value}>₹{product.price}</Text>
+        {/* Product Info Card */}
+        <View style={styles.infoCard}>
+          <Text style={styles.label}>Price:</Text>
+          <Text style={styles.value}>₹{product.price}</Text>
 
-        <Text style={styles.label}>Quantity:</Text>
-        <Text style={styles.value}>{product.quantity}</Text>
-      </View>
+          <Text style={styles.label}>Quantity:</Text>
+          <Text style={styles.value}>{product.quantity}</Text>
+        </View>
 
-      <Text style={styles.desc}>
-        This is a sample product description. You can edit or delete this
-        product using the options below.
-      </Text>
+        <Text style={styles.desc}>
+          This is a sample product description. You can edit or delete this
+          product using the options below.
+        </Text>
 
-      {/* Action Buttons */}
-      <View style={styles.btnRow}>
-        <TouchableOpacity
-          style={[styles.btn, styles.editBtn]}
-          onPress={() => navigation.navigate('EditProduct', { product })}
-        >
-          <Ionicons name="create-outline" size={20} color="#fff" />
-          <Text style={styles.btnText}>Edit</Text>
-        </TouchableOpacity>
+        {/* Action Buttons */}
+        <View style={styles.btnRow}>
+          <TouchableOpacity
+            style={[styles.btn, styles.editBtn]}
+            onPress={() => navigation.navigate('EditProduct', { product })}
+          >
+            <Ionicons name="create-outline" size={20} color="#fff" />
+            <Text style={styles.btnText}>Edit</Text>
+          </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.btn, styles.deleteBtn]}
-          onPress={handleDelete}
-          disabled={loading}
-        >
-          {loading ? (
-            <ActivityIndicator color="#fff" />
-          ) : (
-            <>
-              <Ionicons name="trash-outline" size={20} color="#fff" />
-              <Text style={styles.btnText}>Delete</Text>
-            </>
-          )}
-        </TouchableOpacity>
-      </View>
+          <TouchableOpacity
+            style={[styles.btn, styles.deleteBtn]}
+            onPress={handleDelete}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <>
+                <Ionicons name="trash-outline" size={20} color="#fff" />
+                <Text style={styles.btnText}>Delete</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
     </View>
   );
 };

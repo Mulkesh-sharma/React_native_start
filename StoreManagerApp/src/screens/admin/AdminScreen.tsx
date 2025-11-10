@@ -7,9 +7,11 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useStore } from '../../context/StoreContext';
+import AppHeader from '../../components/AppHeader';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
 const AdminScreen = () => {
@@ -50,52 +52,55 @@ const AdminScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>🛠️ Admin Panel</Text>
+      <AppHeader title="Admin" />
+      <ScrollView>
+        <Text style={styles.title}>🛠️ Admin Panel</Text>
 
-      {/* Add Product Button */}
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => navigation.navigate('AddProduct')}
-      >
-        <Ionicons name="add-circle-outline" size={22} color="#fff" />
-        <Text style={styles.addText}>Add New Product</Text>
-      </TouchableOpacity>
+        {/* Add Product Button */}
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => navigation.navigate('AddProduct')}
+        >
+          <Ionicons name="add-circle-outline" size={22} color="#fff" />
+          <Text style={styles.addText}>Add New Product</Text>
+        </TouchableOpacity>
 
-      {/* Product List */}
-      <FlatList
-        data={products}
-        keyExtractor={item => item._id || item.id}
-        ListEmptyComponent={
-          <Text style={styles.emptyText}>No products available</Text>
-        }
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.price}>₹{item.price}</Text>
-              <Text style={styles.qty}>Stock: {item.quantity}</Text>
+        {/* Product List */}
+        <FlatList
+          data={products}
+          keyExtractor={item => item._id || item.id}
+          ListEmptyComponent={
+            <Text style={styles.emptyText}>No products available</Text>
+          }
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.price}>₹{item.price}</Text>
+                <Text style={styles.qty}>Stock: {item.quantity}</Text>
+              </View>
+
+              <View style={styles.actions}>
+                <TouchableOpacity
+                  style={[styles.actionBtn, styles.editBtn]}
+                  onPress={() =>
+                    navigation.navigate('EditProduct', { product: item })
+                  }
+                >
+                  <Ionicons name="create-outline" size={18} color="#fff" />
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.actionBtn, styles.deleteBtn]}
+                  onPress={() => handleDelete(item._id || item.id)}
+                >
+                  <Ionicons name="trash-outline" size={18} color="#fff" />
+                </TouchableOpacity>
+              </View>
             </View>
-
-            <View style={styles.actions}>
-              <TouchableOpacity
-                style={[styles.actionBtn, styles.editBtn]}
-                onPress={() =>
-                  navigation.navigate('EditProduct', { product: item })
-                }
-              >
-                <Ionicons name="create-outline" size={18} color="#fff" />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.actionBtn, styles.deleteBtn]}
-                onPress={() => handleDelete(item._id || item.id)}
-              >
-                <Ionicons name="trash-outline" size={18} color="#fff" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-      />
+          )}
+        />
+      </ScrollView>
     </View>
   );
 };
@@ -103,7 +108,10 @@ const AdminScreen = () => {
 export default AdminScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#fff' },
+    container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
 
   loadingContainer: {
     flex: 1,

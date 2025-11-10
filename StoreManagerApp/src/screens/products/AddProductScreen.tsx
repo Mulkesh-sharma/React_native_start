@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useStore } from '../../context/StoreContext';
@@ -52,45 +53,47 @@ const AddProductScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Add New Product</Text>
+      <ScrollView>
+        <Text style={styles.title}>Add New Product</Text>
 
-      <TextInput
-        placeholder="Product Name"
-        placeholderTextColor="#999"
-        value={name}
-        onChangeText={setName}
-        style={styles.input}
-      />
+        <TextInput
+          placeholder="Product Name"
+          placeholderTextColor="#999"
+          value={name}
+          onChangeText={setName}
+          style={styles.input}
+        />
 
-      <TextInput
-        placeholder="Price"
-        placeholderTextColor="#999"
-        value={price}
-        onChangeText={setPrice}
-        keyboardType="numeric"
-        style={styles.input}
-      />
+        <TextInput
+          placeholder="Price"
+          placeholderTextColor="#999"
+          value={price}
+          onChangeText={setPrice}
+          keyboardType="numeric"
+          style={styles.input}
+        />
 
-      <TextInput
-        placeholder="Quantity"
-        placeholderTextColor="#999"
-        value={quantity}
-        onChangeText={setQuantity}
-        keyboardType="numeric"
-        style={styles.input}
-      />
+        <TextInput
+          placeholder="Quantity"
+          placeholderTextColor="#999"
+          value={quantity}
+          onChangeText={setQuantity}
+          keyboardType="numeric"
+          style={styles.input}
+        />
 
-      <TouchableOpacity
-        style={styles.saveBtn}
-        onPress={handleAdd}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.saveText}>Save Product</Text>
-        )}
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.saveBtn}
+          onPress={handleAdd}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.saveText}>Save Product</Text>
+          )}
+        </TouchableOpacity>
+      </ScrollView>
     </View>
   );
 };
@@ -101,7 +104,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: 20,
   },
 
   title: {

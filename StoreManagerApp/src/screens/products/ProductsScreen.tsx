@@ -7,10 +7,12 @@ import {
   TouchableOpacity,
   Alert,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useStore } from '../../context/StoreContext';
+import AppHeader from '../../components/AppHeader';
 
 const ProductsScreen = () => {
   const navigation = useNavigation<any>();
@@ -37,69 +39,74 @@ const ProductsScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>All Products</Text>
+      {/* Header */}
+      <AppHeader title="Products" />
 
-      {/* Add Product Button */}
-      <TouchableOpacity
-        style={styles.addButton}
-        onPress={() => navigation.navigate('AddProduct')}
-      >
-        <Ionicons name="add-circle-outline" size={22} color="#fff" />
-        <Text style={styles.addText}>Add Product</Text>
-      </TouchableOpacity>
+      <ScrollView>
+        <Text style={styles.title}>All Products</Text>
 
-      {/* Loader */}
-      {loadingProducts && (
-        <ActivityIndicator
-          size="large"
-          color="#007bff"
-          style={{ marginTop: 20 }}
-        />
-      )}
+        {/* Add Product Button */}
+        <TouchableOpacity
+          style={styles.addButton}
+          onPress={() => navigation.navigate('AddProduct')}
+        >
+          <Ionicons name="add-circle-outline" size={22} color="#fff" />
+          <Text style={styles.addText}>Add Product</Text>
+        </TouchableOpacity>
 
-      {/* Product List */}
-      {!loadingProducts && (
-        <FlatList
-          data={products}
-          keyExtractor={item => item._id}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.card}
-              onPress={() =>
-                navigation.navigate('ProductDetail', { product: item })
-              }
-            >
-              <View style={{ flex: 1 }}>
-                <Text style={styles.name}>{item.name}</Text>
-                <Text style={styles.price}>₹{item.price}</Text>
-                <Text style={styles.qty}>Stock: {item.quantity}</Text>
-              </View>
+        {/* Loader */}
+        {loadingProducts && (
+          <ActivityIndicator
+            size="large"
+            color="#007bff"
+            style={{ marginTop: 20 }}
+          />
+        )}
 
-              {/* Edit/Delete Buttons */}
-              <View style={styles.actionRow}>
-                <TouchableOpacity
-                  style={[styles.actionBtn, styles.editBtn]}
-                  onPress={() =>
-                    navigation.navigate('EditProduct', { product: item })
-                  }
-                >
-                  <Ionicons name="create-outline" size={18} color="#fff" />
-                </TouchableOpacity>
+        {/* Product List */}
+        {!loadingProducts && (
+          <FlatList
+            data={products}
+            keyExtractor={item => item._id}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.card}
+                onPress={() =>
+                  navigation.navigate('ProductDetail', { product: item })
+                }
+              >
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.name}>{item.name}</Text>
+                  <Text style={styles.price}>₹{item.price}</Text>
+                  <Text style={styles.qty}>Stock: {item.quantity}</Text>
+                </View>
 
-                <TouchableOpacity
-                  style={[styles.actionBtn, styles.deleteBtn]}
-                  onPress={() => handleDelete(item._id)}
-                >
-                  <Ionicons name="trash-outline" size={18} color="#fff" />
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          )}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>No products found</Text>
-          }
-        />
-      )}
+                {/* Edit/Delete Buttons */}
+                <View style={styles.actionRow}>
+                  <TouchableOpacity
+                    style={[styles.actionBtn, styles.editBtn]}
+                    onPress={() =>
+                      navigation.navigate('EditProduct', { product: item })
+                    }
+                  >
+                    <Ionicons name="create-outline" size={18} color="#fff" />
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[styles.actionBtn, styles.deleteBtn]}
+                    onPress={() => handleDelete(item._id)}
+                  >
+                    <Ionicons name="trash-outline" size={18} color="#fff" />
+                  </TouchableOpacity>
+                </View>
+              </TouchableOpacity>
+            )}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>No products found</Text>
+            }
+          />
+        )}
+      </ScrollView>
     </View>
   );
 };
@@ -108,7 +115,9 @@ export default ProductsScreen;
 
 // -------------------- STYLES --------------------
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: '#fff' },
+  container: { 
+    flex: 1,
+    backgroundColor: '#fff' },
 
   title: {
     fontSize: 24,

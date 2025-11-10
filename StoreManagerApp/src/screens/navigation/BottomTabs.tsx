@@ -33,7 +33,6 @@ const BottomTabs = () => {
           else if (route.name === "Products") icon = "pricetags-outline";
           else if (route.name === "Dashboard") icon = "stats-chart-outline";
           else if (route.name === "Admin") icon = "settings-outline";
-          else if (route.name === "Logout") icon = "log-out-outline";
 
           return <Ionicons name={icon} size={24} color={color} />;
         },
@@ -43,23 +42,6 @@ const BottomTabs = () => {
       <Tab.Screen name="Products" component={ProductsScreen} />
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
       <Tab.Screen name="Admin" component={AdminScreen} />
-
-      {/* LOGOUT BUTTON */}
-      <Tab.Screen
-        name="Logout"
-        component={() => null}
-        listeners={() => ({
-          tabPress: (e) => {
-            e.preventDefault();
-            logout();
-          },
-        })}
-        options={{
-          tabBarLabel: () => (
-            <Text style={{ color: "red", fontWeight: "bold" }}>Logout</Text>
-          ),
-        }}
-      />
     </Tab.Navigator>
   );
 };

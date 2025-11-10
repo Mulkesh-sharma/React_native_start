@@ -1,26 +1,27 @@
-import React from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from '../context/AuthContext';
 
 // AUTH SCREENS
-import LoginScreen from "../screens/auth/LoginScreen";
-import SignupScreen from "../screens/auth/SignupScreen";
+import LoginScreen from '../screens/auth/LoginScreen';
+import SignupScreen from '../screens/auth/SignupScreen';
 
 // TABS
-import BottomTabs from "../screens/navigation/BottomTabs";
+import BottomTabs from '../screens/navigation/BottomTabs';
 
 // PRODUCT SCREENS
-import ProductsScreen from "../screens/products/ProductsScreen";
-import ProductDetailScreen from "../screens/products/ProductDetailScreen";
-import AddProductScreen from "../screens/products/AddProductScreen";
-import EditProductScreen from "../screens/products/EditProductScreen";
+import ProductsScreen from '../screens/products/ProductsScreen';
+import ProductDetailScreen from '../screens/products/ProductDetailScreen';
+import AddProductScreen from '../screens/products/AddProductScreen';
+import EditProductScreen from '../screens/products/EditProductScreen';
 
 // ADMIN
-import AdminScreen from "../screens/admin/AdminScreen";
-import DashboardScreen from "../screens/dashboard/DashboardScreen";
+import AdminScreen from '../screens/admin/AdminScreen';
+import DashboardScreen from '../screens/dashboard/DashboardScreen';
+import ProfileScreen from '../screens/admin/ProfileScreen';
 
-import { Product } from "../context/StoreContext";
+import { Product } from '../context/StoreContext';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -34,6 +35,7 @@ export type RootStackParamList = {
   EditProduct: { product: Product };
 
   Admin: undefined;
+  Profile: undefined;
   Dashboard: undefined;
 };
 
@@ -58,37 +60,42 @@ const AppNavigator = () => {
           <Stack.Screen
             name="Products"
             component={ProductsScreen}
-            options={{ headerShown: true, title: "Products" }}
+            options={{ headerShown: true, title: 'Products' }}
           />
 
           <Stack.Screen
             name="ProductDetail"
             component={ProductDetailScreen}
-            options={{ headerShown: true, title: "Product Details" }}
+            options={{ headerShown: true, title: 'Product Details' }}
           />
 
           <Stack.Screen
             name="AddProduct"
             component={AddProductScreen}
-            options={{ headerShown: true, title: "Add Product" }}
+            options={{ headerShown: true, title: 'Add Product' }}
           />
 
           <Stack.Screen
             name="EditProduct"
             component={EditProductScreen}
-            options={{ headerShown: true, title: "Edit Product" }}
+            options={{ headerShown: true, title: 'Edit Product' }}
           />
 
           <Stack.Screen
             name="Admin"
             component={AdminScreen}
-            options={{ headerShown: true, title: "Admin Panel" }}
+            options={{ headerShown: true, title: 'Admin Panel' }}
           />
 
           <Stack.Screen
             name="Dashboard"
             component={DashboardScreen}
-            options={{ headerShown: true, title: "Dashboard" }}
+            options={{ headerShown: true, title: 'Dashboard' }}
+          />
+          <Stack.Screen
+            name="Profile"
+            component={ProfileScreen}
+            options={{ title: 'Profile' }}
           />
         </>
       )}

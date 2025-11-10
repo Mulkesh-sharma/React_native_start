@@ -7,9 +7,10 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import AppHeader from '../../components/AppHeader';
 import { useStore } from '../../context/StoreContext';
 
 const HomeScreen = () => {
@@ -20,27 +21,8 @@ const HomeScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>🛍️ Store Manager</Text>
-
-        <View style={styles.headerIcons}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Products')}
-            style={styles.iconBtn}
-          >
-            <Ionicons name="pricetags-outline" size={24} color="#007bff" />
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Admin')}
-            style={styles.iconBtn}
-          >
-            <Ionicons name="settings-outline" size={24} color="#007bff" />
-          </TouchableOpacity>
-        </View>
-      </View>
-
+      <AppHeader isHome />
+      <ScrollView>
       <Text style={styles.subtitle}>Quick overview of your inventory</Text>
 
       {/* Loader */}
@@ -105,6 +87,7 @@ const HomeScreen = () => {
           }
         />
       )}
+      </ScrollView>
     </View>
   );
 };
@@ -112,7 +95,10 @@ const HomeScreen = () => {
 export default HomeScreen;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#fafafa', padding: 16 },
+  container: { 
+    flex: 1,
+    backgroundColor: '#fafafa',
+  },
 
   header: {
     flexDirection: 'row',
@@ -125,11 +111,6 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: 'bold',
     color: '#007bff',
-  },
-
-  headerIcons: {
-    flexDirection: 'row',
-    gap: 16,
   },
 
   iconBtn: {
