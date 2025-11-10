@@ -1,60 +1,99 @@
-import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import BottomTabs from '../screens/BottomTabs';
-import HomeScreen from '../screens/HomeScreen';
-import ProductDetailScreen from '../screens/ProductDetailScreen';
-import CartScreen from '../screens/CartScreen';
-import AdminScreen from '../screens/AdminScreen';
-import DashboardScreen from '../screens/DashboardScreen';
-import ProductsScreen from '../screens/ProductsScreen';
-import AddProductScreen from '../screens/AddProductScreen';
-import EditProductScreen from '../screens/EditProductScreen';
-import { Product } from '../context/StoreContext';
+import React from "react";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+
+import { useAuth } from "../context/AuthContext";
+
+// AUTH SCREENS
+import LoginScreen from "../screens/auth/LoginScreen";
+import SignupScreen from "../screens/auth/SignupScreen";
+
+// TABS
+import BottomTabs from "../screens/navigation/BottomTabs";
+
+// PRODUCT SCREENS
+import ProductsScreen from "../screens/products/ProductsScreen";
+import ProductDetailScreen from "../screens/products/ProductDetailScreen";
+import AddProductScreen from "../screens/products/AddProductScreen";
+import EditProductScreen from "../screens/products/EditProductScreen";
+
+// ADMIN
+import AdminScreen from "../screens/admin/AdminScreen";
+import DashboardScreen from "../screens/dashboard/DashboardScreen";
+
+import { Product } from "../context/StoreContext";
 
 export type RootStackParamList = {
-    Home: undefined;
-    Products: undefined;
-    ProductDetail: { product: { id: string; name: string; price: number } };
-    Cart: undefined;
-    Admin: undefined;
-    Dashboard: undefined;
-    AddProduct: undefined;
-    EditProduct: { product: Product };
-    MainTabs: undefined;
+  Login: undefined;
+  Signup: undefined;
+
+  MainTabs: undefined;
+
+  Products: undefined;
+  ProductDetail: { product: Product };
+  AddProduct: undefined;
+  EditProduct: { product: Product };
+
+  Admin: undefined;
+  Dashboard: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
-const AppNavigator = () => (
-    <Stack.Navigator
-        initialRouteName="MainTabs"
-        screenOptions={{
-            headerShown: false,
-            animation: 'fade_from_bottom',
-        }}
-    >
-        <Stack.Screen name="MainTabs" component={BottomTabs} />
-        <Stack.Screen name="Home" component={HomeScreen} />
-        <Stack.Screen
+const AppNavigator = () => {
+  const { token, loading } = useAuth();
+
+  if (loading) return null;
+
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {!token ? (
+        <>
+          <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="Signup" component={SignupScreen} />
+        </>
+      ) : (
+        <>
+          <Stack.Screen name="MainTabs" component={BottomTabs} />
+
+          <Stack.Screen
+            name="Products"
+            component={ProductsScreen}
+            options={{ headerShown: true, title: "Products" }}
+          />
+
+          <Stack.Screen
             name="ProductDetail"
             component={ProductDetailScreen}
-            options={{ headerShown: true, title: 'Product Details' }}
-        />
-        <Stack.Screen name="Cart" component={CartScreen} />
-        <Stack.Screen name="Admin" component={AdminScreen} />
-        <Stack.Screen name="Dashboard" component={DashboardScreen} />
-        <Stack.Screen name="Products" component={ProductsScreen} />
-        <Stack.Screen
+            options={{ headerShown: true, title: "Product Details" }}
+          />
+
+          <Stack.Screen
             name="AddProduct"
             component={AddProductScreen}
-            options={{ headerShown: true, title: 'Add New Product' }}
-        />
-        <Stack.Screen
+            options={{ headerShown: true, title: "Add Product" }}
+          />
+
+          <Stack.Screen
             name="EditProduct"
             component={EditProductScreen}
-            options={{ headerShown: true, title: 'Edit Product' }}
-        />
+            options={{ headerShown: true, title: "Edit Product" }}
+          />
+
+          <Stack.Screen
+            name="Admin"
+            component={AdminScreen}
+            options={{ headerShown: true, title: "Admin Panel" }}
+          />
+
+          <Stack.Screen
+            name="Dashboard"
+            component={DashboardScreen}
+            options={{ headerShown: true, title: "Dashboard" }}
+          />
+        </>
+      )}
     </Stack.Navigator>
-);
+  );
+};
 
 export default AppNavigator;

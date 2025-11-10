@@ -1,102 +1,104 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { products as dummyProducts } from '../data/dummyProducts';
+import React, { createContext, useState, useEffect, useContext } from "react";
+import { apiGet, apiRequest } from "../utils/api";
+import { useAuth } from "./AuthContext";
 
-export type Product = { id: string; name: string; price: number; quantity?: number };
-export type CartItem = Product & { quantity: number };
+export type Product = {
+  _id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  owner?: string;
+};
 
-interface StoreContextType {
-    products: Product[];
-    cart: CartItem[];
-    addProduct: (name: string, price: number) => void;
-    updateProduct: (id: string, updatedProduct: Product) => void;
-    deleteProduct: (id: string) => void;
-    addToCart: (product: Product) => void;
-    removeFromCart: (id: string) => void;
-    clearCart: () => void;
-}
+type StoreContextType = {
+  products: Product[];
+  loadingProducts: boolean;
+  fetchProducts: () => Promise<void>;
+  addProduct: (name: string, price: number, quantity: number) => Promise<any>;
+  updateProduct: (id: string, data: Partial<Product>) => Promise<any>;
+  deleteProduct: (id: string) => Promise<any>;
+};
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
-export const StoreProvider = ({ children }: { children: ReactNode }) => {
-    const [products, setProducts] = useState<Product[]>([]);
-    const [cart, setCart] = useState<CartItem[]>([]);
+export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
+  const { token, isLoggedIn } = useAuth();
 
-    // Load products & cart from storage
-    useEffect(() => {
-        const loadData = async () => {
-            try {
-                const savedProducts = await AsyncStorage.getItem('products');
-                const savedCart = await AsyncStorage.getItem('cart');
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(false);
 
-                if (savedProducts) setProducts(JSON.parse(savedProducts));
-                else setProducts(dummyProducts);
+  // Auto-fetch when logged in
+  useEffect(() => {
+    if (isLoggedIn) fetchProducts();
+    else setProducts([]);
+  }, [isLoggedIn]);
 
-                if (savedCart) setCart(JSON.parse(savedCart));
-            } catch (e) {
-                console.log('Error loading data:', e);
-            }
-        };
-        loadData();
-    }, []);
+  const fetchProducts = async () => {
+    if (!token) return;
 
-    // Save to storage
-    useEffect(() => {
-        AsyncStorage.setItem('products', JSON.stringify(products)).catch(console.log);
-    }, [products]);
+    setLoadingProducts(true);
+    try {
+      const res = await apiRequest("/products", "GET");
+      if (Array.isArray(res)) setProducts(res);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
 
-    useEffect(() => {
-        AsyncStorage.setItem('cart', JSON.stringify(cart)).catch(console.log);
-    }, [cart]);
+  const addProduct = async (name: string, price: number, quantity: number) => {
+    const res = await apiRequest("/products", "POST", {
+      name,
+      price,
+      quantity,
+    });
 
-    const addProduct = (name: string, price: number) => {
-        const newProduct: Product = { id: Date.now().toString(), name, price, quantity: 10 };
-        setProducts(prev => [...prev, newProduct]);
-    };
+    if (res.product) {
+      setProducts((p) => [...p, res.product]);
+    }
 
-    const updateProduct = (id: string, updated: Product) => {
-        setProducts(prev => prev.map(p => (p.id === id ? updated : p)));
-    };
+    return res;
+  };
 
-    const deleteProduct = (id: string) => {
-        setProducts(prev => prev.filter(p => p.id !== id));
-    };
+  const updateProduct = async (id: string, data: Partial<Product>) => {
+    const res = await apiRequest(`/products/${id}`, "PUT", data);
 
-    const addToCart = (product: Product) => {
-        setCart(prev => {
-            const existing = prev.find(p => p.id === product.id);
-            if (existing) {
-                return prev.map(p =>
-                    p.id === product.id ? { ...p, quantity: p.quantity + 1 } : p
-                );
-            }
-            return [...prev, { ...product, quantity: 1 }];
-        });
-    };
+    if (res.product) {
+      setProducts((p) =>
+        p.map((prod) => (prod._id === id ? res.product : prod))
+      );
+    }
 
-    const removeFromCart = (id: string) => setCart(prev => prev.filter(i => i.id !== id));
-    const clearCart = () => setCart([]);
+    return res;
+  };
 
-    return (
-        <StoreContext.Provider
-            value={{
-                products,
-                cart,
-                addProduct,
-                updateProduct,
-                deleteProduct,
-                addToCart,
-                removeFromCart,
-                clearCart,
-            }}
-        >
-            {children}
-        </StoreContext.Provider>
-    );
+  const deleteProduct = async (id: string) => {
+    const res = await apiRequest(`/products/${id}`, "DELETE");
+
+    if (res.deleted) {
+      setProducts((p) => p.filter((prod) => prod._id !== id));
+    }
+
+    return res;
+  };
+
+  return (
+    <StoreContext.Provider
+      value={{
+        products,
+        loadingProducts,
+        fetchProducts,
+        addProduct,
+        updateProduct,
+        deleteProduct,
+      }}
+    >
+      {children}
+    </StoreContext.Provider>
+  );
 };
 
 export const useStore = () => {
-    const ctx = useContext(StoreContext);
-    if (!ctx) throw new Error('useStore must be used within StoreProvider');
-    return ctx;
+  const ctx = useContext(StoreContext);
+  if (!ctx) throw new Error("useStore must be used within StoreProvider");
+  return ctx;
 };
