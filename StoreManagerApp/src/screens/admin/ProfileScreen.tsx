@@ -15,8 +15,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
-import { useStore } from '../../context/StoreContext'; // ✅ ADDED
 import Icon from 'react-native-vector-icons/Feather';
+import { useAuth } from '../../context/AuthContext';
 
 type ProfileForm = {
   storeName: string;
@@ -39,7 +39,7 @@ const STORE_TYPES = [
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
   const navigation = useNavigation<any>(); // ✅ ADDED
-  const { logout } = useStore(); // ✅ ADDED
+  const { logout } = useAuth(); // ✅ ADDED
 
   const [form, setForm] = useState<ProfileForm>({
     storeName: '',
@@ -112,10 +112,6 @@ export default function ProfileScreen() {
   // ✅ LOGOUT FUNCTIONALITY
   function handleLogout() {
     logout(); // clear user data from context
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Login' }], // go to login screen
-    });
   }
 
   return (
@@ -354,6 +350,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
+    marginBottom: 4,
     borderWidth: 1,
     borderColor: '#2a2f3a',
   },

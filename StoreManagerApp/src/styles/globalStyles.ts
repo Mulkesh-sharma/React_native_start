@@ -12,11 +12,11 @@ export const globalStyles = StyleSheet.create({
   scrollView: {
     flex: 1,
     backgroundColor: '#0f1115',
+    padding: 16,
+    paddingBottom: 12,
   },
   scrollContent: {
-    marginTop: 8,
-    paddingVertical: 8,
-    paddingBottom: 8, // Extra padding at the bottom for better scrolling
+    paddingBottom: 20, // Extra padding at the bottom for better scrolling
   },
   card: {
     backgroundColor: '#171a21',

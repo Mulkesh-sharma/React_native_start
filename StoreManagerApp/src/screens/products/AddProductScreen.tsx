@@ -94,7 +94,7 @@ const AddProductScreen = () => {
           {loading ? (
             <ActivityIndicator color="#ffffff" />
           ) : (
-            <Text style={styles.saveText}>Save Product</Text>
+            <Text style={styles.saveText}>Add Product</Text>
           )}
         </TouchableOpacity>
       </ScrollView>
@@ -128,7 +128,6 @@ const styles = StyleSheet.create({
     borderColor: '#2a2f3a',
     fontSize: 16,
     color: '#ffffff',
-    marginHorizontal: 8,
   },
 
   saveBtn: {
@@ -137,7 +136,6 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     alignItems: 'center',
     marginTop: 8,
-    marginHorizontal: 8,
     borderWidth: 1,
     borderColor: '#1b5e20',
   },

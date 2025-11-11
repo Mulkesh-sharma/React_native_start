@@ -38,7 +38,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
 
     setLoadingProducts(true);
     try {
-      const res = await apiRequest("/products", "GET");
+      const res = await apiRequest("products", "GET");
       if (Array.isArray(res)) setProducts(res);
     } finally {
       setLoadingProducts(false);
@@ -46,7 +46,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const addProduct = async (name: string, price: number, quantity: number) => {
-    const res = await apiRequest("/products", "POST", {
+    const res = await apiRequest("products", "POST", {
       name,
       price,
       quantity,

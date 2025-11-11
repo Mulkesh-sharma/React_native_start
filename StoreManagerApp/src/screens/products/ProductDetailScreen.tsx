@@ -8,7 +8,6 @@ import {
 } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Product } from '../../context/StoreContext';
-import AppHeader from '../../components/AppHeader';
 import { useStore } from '../../context/StoreContext';
 import { globalStyles } from '../../styles/globalStyles';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -27,7 +26,6 @@ const ProductDetailScreen = () => {
 
   return (
     <View style={styles.container}>
-      <AppHeader title="Product Details" />
 
       <ScrollView 
         style={globalStyles.scrollView}
@@ -91,7 +89,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#171a21',
     padding: 20,
     borderRadius: 16,
-    marginHorizontal: 16,
     marginBottom: 24,
     borderWidth: 1,
     borderColor: '#2a2f3a',
@@ -114,7 +111,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     color: '#b6c0cf',
-    marginHorizontal: 16,
     marginBottom: 30,
   },
 
@@ -122,7 +118,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 16,
-    marginHorizontal: 16,
     marginBottom: 24,
   },
 

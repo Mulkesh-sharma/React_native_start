@@ -27,7 +27,6 @@ const HomeScreen = () => {
         style={globalStyles.scrollView}
         contentContainerStyle={globalStyles.scrollContent}
       >
-        <Text style={styles.subtitle}>Quick overview of your inventory</Text>
 
       {/* Loader */}
       {loadingProducts && (
@@ -126,19 +125,11 @@ const styles = StyleSheet.create({
     borderColor: '#2a2f3a',
   },
 
-  subtitle: {
-    textAlign: 'center',
-    color: '#b6c0cf',
-    marginBottom: 20,
-    fontSize: 15,
-    paddingHorizontal: 16,
-  },
-
   card: {
     backgroundColor: '#171a21',
     width: '48%',
     borderRadius: 16,
-    padding: 16,
+    padding: 8,
     alignItems: 'center',
     marginBottom: 16,
     borderWidth: 1,
@@ -146,7 +137,7 @@ const styles = StyleSheet.create({
   },
 
   image: { 
-    width: 100, 
+    width: 140, 
     height: 100, 
     borderRadius: 12, 
     marginBottom: 12,
@@ -188,7 +179,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 12,
     alignItems: 'center',
-    margin: 16,
     marginTop: 8,
     borderWidth: 1,
     borderColor: '#1b5e20',

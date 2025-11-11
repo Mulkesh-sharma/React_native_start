@@ -91,7 +91,7 @@ export default DashboardScreen;
 const styles = StyleSheet.create({
   container: { 
     flex: 1,
-    backgroundColor: '#0f1115' 
+    backgroundColor: '#0f1115', 
   },
 
   loadingContainer: {
@@ -114,7 +114,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#171a21',
     padding: 20,
     borderRadius: 16,
-    marginHorizontal: 16,
     marginBottom: 16,
     borderWidth: 1,
     borderColor: '#2a2f3a',

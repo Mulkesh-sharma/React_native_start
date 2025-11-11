@@ -148,14 +148,12 @@ const styles = StyleSheet.create({
     color: '#b6c0cf',
     marginBottom: 30,
     lineHeight: 22,
-    marginHorizontal: 8,
   },
 
   btnRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 16,
-    marginHorizontal: 8,
     marginBottom: 24,
   },
 
