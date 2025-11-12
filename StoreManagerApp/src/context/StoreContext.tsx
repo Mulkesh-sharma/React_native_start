@@ -11,8 +11,12 @@ export type Product = {
 };
 
 type StoreContextType = {
+  user: any;
   products: Product[];
-  loadingProducts: boolean;
+  loading: boolean;
+
+  refreshAll: () => Promise<void>;
+
   fetchProducts: () => Promise<void>;
   addProduct: (name: string, price: number, quantity: number) => Promise<any>;
   updateProduct: (id: string, data: Partial<Product>) => Promise<any>;
@@ -24,36 +28,54 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined);
 export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   const { token, isLoggedIn } = useAuth();
 
+  const [user, setUser] = useState<any>(null);
   const [products, setProducts] = useState<Product[]>([]);
-  const [loadingProducts, setLoadingProducts] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Auto-fetch when logged in
-  useEffect(() => {
-    if (isLoggedIn) fetchProducts();
-    else setProducts([]);
-  }, [isLoggedIn]);
-
-  const fetchProducts = async () => {
+  // ============================
+  // 🔥 Fetch profile + products
+  // ============================
+  const refreshAll = async () => {
     if (!token) return;
 
-    setLoadingProducts(true);
+    setLoading(true);
+
     try {
-      const res = await apiRequest("products", "GET");
-      if (Array.isArray(res)) setProducts(res);
-    } finally {
-      setLoadingProducts(false);
+      const u = await apiRequest("/auth/me", "GET");
+      if (u?.user) setUser(u.user);
+
+      const p = await apiRequest("/products", "GET");
+      if (Array.isArray(p)) setProducts(p);
+    } catch (err) {
+      console.log("Refresh Error:", err);
     }
+
+    setLoading(false);
+  };
+
+  // Auto run when logged in state changes
+  useEffect(() => {
+    if (isLoggedIn) refreshAll();
+    else {
+      setUser(null);
+      setProducts([]);
+    }
+  }, [isLoggedIn]);
+
+  // ============================
+  // CRUD Product Functions
+  // ============================
+
+  const fetchProducts = async () => {
+    const p = await apiRequest("/products", "GET");
+    if (Array.isArray(p)) setProducts(p);
   };
 
   const addProduct = async (name: string, price: number, quantity: number) => {
-    const res = await apiRequest("products", "POST", {
-      name,
-      price,
-      quantity,
-    });
+    const res = await apiRequest("/products", "POST", { name, price, quantity });
 
     if (res.product) {
-      setProducts((p) => [...p, res.product]);
+      setProducts((prev) => [...prev, res.product]);
     }
 
     return res;
@@ -63,8 +85,8 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     const res = await apiRequest(`/products/${id}`, "PUT", data);
 
     if (res.product) {
-      setProducts((p) =>
-        p.map((prod) => (prod._id === id ? res.product : prod))
+      setProducts((prev) =>
+        prev.map((p) => (p._id === id ? res.product : p))
       );
     }
 
@@ -75,7 +97,7 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
     const res = await apiRequest(`/products/${id}`, "DELETE");
 
     if (res.deleted) {
-      setProducts((p) => p.filter((prod) => prod._id !== id));
+      setProducts((prev) => prev.filter((p) => p._id !== id));
     }
 
     return res;
@@ -84,8 +106,11 @@ export const StoreProvider = ({ children }: { children: React.ReactNode }) => {
   return (
     <StoreContext.Provider
       value={{
+        user,
         products,
-        loadingProducts,
+        loading,
+
+        refreshAll,
         fetchProducts,
         addProduct,
         updateProduct,
