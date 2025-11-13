@@ -9,7 +9,6 @@ import {
 } from 'react-native';
 
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
-
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Toast from 'react-native-toast-message';
 
@@ -18,17 +17,16 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { globalStyles } from '../../styles/globalStyles';
 
 const API_URL = "https://backend-api-rwpt.onrender.com/products";
-const CACHE_DURATION = 10 * 60 * 1000;
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 
 const DashboardScreen = () => {
   const navigation = useNavigation<any>();
 
-  // HOOKS ALWAYS AT TOP (never conditional)
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // ---------------- FETCH PRODUCTS (WITH CACHE) ----------------
+  // ---------------- Fetch Products ----------------
   const fetchProducts = async (forceRefresh = false) => {
     try {
       setLoading(true);
@@ -45,10 +43,7 @@ const DashboardScreen = () => {
 
       const token = await AsyncStorage.getItem("token");
       if (!token) {
-        Toast.show({
-          type: "error",
-          text1: "Session expired",
-        });
+        Toast.show({ type: "error", text1: "Session expired" });
         navigation.navigate("Login");
         return;
       }
@@ -64,37 +59,29 @@ const DashboardScreen = () => {
         await AsyncStorage.setItem("products_cache", JSON.stringify(data.products));
         await AsyncStorage.setItem("products_cache_timestamp", now.toString());
       } else {
-        Toast.show({
-          type: "error",
-          text1: "Failed to load products",
-        });
+        Toast.show({ type: "error", text1: "Failed to load products" });
       }
     } catch (err) {
       console.log(err);
-      Toast.show({
-        type: "error",
-        text1: "Error loading dashboard",
-      });
+      Toast.show({ type: "error", text1: "Error loading dashboard" });
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
 
-  // Load on focus
   useFocusEffect(
     useCallback(() => {
       fetchProducts(false);
     }, [])
   );
 
-  // Pull-to-Refresh
   const onRefresh = () => {
     setRefreshing(true);
     fetchProducts(true);
   };
 
-  // ------------------- DASHBOARD STATS -------------------
+  // ---------------- Dashboard Stats ----------------
   const stats = useMemo(() => {
     const totalProducts = products.length;
     const totalUnits = products.reduce((a, p) => a + (p.quantity || 0), 0);
@@ -108,66 +95,67 @@ const DashboardScreen = () => {
     <View style={styles.container}>
       <AppHeader title="Dashboard" />
 
-      <ScrollView
-        style={globalStyles.scrollView}
-        contentContainerStyle={globalStyles.scrollContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        {/* LOADING */}
-        {loading && (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#4f8cff" />
-            <Text style={{ marginTop: 10, color: '#b6c0cf' }}>
-              Loading Dashboard...
-            </Text>
+      {/* LOADER (Now under header) */}
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#4f8cff" />
+          <Text style={styles.loadingText}>Loading Dashboard...</Text>
+        </View>
+      )}
+
+      {!loading && (
+        <ScrollView
+          style={globalStyles.scrollView}
+          contentContainerStyle={globalStyles.scrollContent}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          {/* Total Products */}
+          <View style={styles.card}>
+            <Ionicons name="cube-outline" size={28} color="#4f8cff" />
+            <Text style={styles.label}>Total Products</Text>
+            <Text style={styles.value}>{stats.totalProducts}</Text>
           </View>
-        )}
 
-        {/* DASHBOARD CONTENT */}
-        {!loading && (
-          <>
-            <View style={styles.card}>
-              <Ionicons name="cube-outline" size={28} color="#4f8cff" />
-              <Text style={styles.label}>Total Products</Text>
-              <Text style={styles.value}>{stats.totalProducts}</Text>
-            </View>
+          {/* Total Units */}
+          <View style={styles.card}>
+            <Ionicons name="layers-outline" size={28} color="#4caf50" />
+            <Text style={styles.label}>Total Stock Units</Text>
+            <Text style={styles.value}>{stats.totalUnits}</Text>
+          </View>
 
-            <View style={styles.card}>
-              <Ionicons name="layers-outline" size={28} color="#4caf50" />
-              <Text style={styles.label}>Total Stock Units</Text>
-              <Text style={styles.value}>{stats.totalUnits}</Text>
-            </View>
+          {/* Inventory Value */}
+          <View style={styles.card}>
+            <Ionicons name="cash-outline" size={28} color="#ff9800" />
+            <Text style={styles.label}>Total Inventory Value</Text>
+            <Text style={styles.value}>₹{stats.totalValue.toFixed(2)}</Text>
+          </View>
 
-            <View style={styles.card}>
-              <Ionicons name="cash-outline" size={28} color="#ff9800" />
-              <Text style={styles.label}>Total Inventory Value</Text>
-              <Text style={styles.value}>₹{stats.totalValue.toFixed(2)}</Text>
-            </View>
-
-            <View style={[styles.card, styles.warningCard]}>
-              <Ionicons name="alert-circle-outline" size={28} color="#ff5252" />
-              <Text style={[styles.label, styles.warningText]}>Low Stock Items</Text>
-              <Text style={[styles.value, styles.warningText]}>{stats.lowStock}</Text>
-            </View>
-          </>
-        )}
-      </ScrollView>
+          {/* Low Stock */}
+          <View style={[styles.card, styles.warningCard]}>
+            <Ionicons name="alert-circle-outline" size={28} color="#ff5252" />
+            <Text style={[styles.label, styles.warningText]}>Low Stock Items</Text>
+            <Text style={[styles.value, styles.warningText]}>{stats.lowStock}</Text>
+          </View>
+        </ScrollView>
+      )}
     </View>
   );
 };
 
 export default DashboardScreen;
 
-
+// ---------------- STYLES ----------------
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0f1115' },
 
   loadingContainer: {
-    alignItems: 'center',
-    marginVertical: 20,
+    paddingVertical: 20,
+    alignItems: "center",
   },
+
+  loadingText: { color: "#b6c0cf", marginTop: 8 },
 
   card: {
     backgroundColor: '#171a21',
@@ -180,7 +168,7 @@ const styles = StyleSheet.create({
 
   warningCard: {
     backgroundColor: 'rgba(255, 193, 7, 0.08)',
-    borderColor: 'rgba(255, 193, 7, 0.3)',
+    borderColor: 'rgba(255,193,7,0.3)',
   },
 
   label: {
@@ -189,7 +177,9 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 
-  warningText: { color: '#ffc107' },
+  warningText: {
+    color: '#ffc107',
+  },
 
   value: {
     fontSize: 28,

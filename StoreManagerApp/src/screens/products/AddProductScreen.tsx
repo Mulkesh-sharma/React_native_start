@@ -8,11 +8,14 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
 } from "react-native";
 
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
+
+import AppHeader from "../../components/AppHeader";
 import { globalStyles } from "../../styles/globalStyles";
 
 const API_URL = "https://backend-api-rwpt.onrender.com/products";
@@ -20,51 +23,42 @@ const API_URL = "https://backend-api-rwpt.onrender.com/products";
 const AddProductScreen = () => {
   const navigation = useNavigation<any>();
 
-  // ------------- HOOKS (always at top) ----------------
   const [name, setName] = useState("");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // ------------- ADD PRODUCT ---------------------------
   const handleAdd = async () => {
     if (!name || !price || !quantity) {
-      Toast.show({
+      return Toast.show({
         type: "error",
         text1: "Missing Fields",
         text2: "All fields are required",
       });
-      return;
     }
 
     const priceNum = Number(price);
     const qtyNum = Number(quantity);
 
     if (isNaN(priceNum) || priceNum <= 0 || isNaN(qtyNum) || qtyNum <= 0) {
-      Toast.show({
+      return Toast.show({
         type: "error",
         text1: "Invalid Input",
         text2: "Enter valid price & quantity",
       });
-      return;
     }
 
     try {
       setLoading(true);
-
       const token = await AsyncStorage.getItem("token");
+
       if (!token) {
-        Toast.show({
-          type: "error",
-          text1: "Unauthorized",
-          text2: "Please login again",
-        });
+        Toast.show({ type: "error", text1: "Unauthorized", text2: "Please login again" });
         navigation.navigate("Login");
         return;
       }
 
-      // Send POST request
-      const response = await fetch(API_URL, {
+      const res = await fetch(API_URL, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -77,40 +71,28 @@ const AddProductScreen = () => {
         }),
       });
 
-      const data = await response.json();
+      const data = await res.json();
 
-      if (response.ok) {
+      if (res.ok) {
         Toast.show({
           type: "success",
           text1: "Product Added",
           text2: `${name} has been added`,
         });
 
-        // ---------------------------
-        // Clear cache so all screens reload fresh data
-        // ---------------------------
         await AsyncStorage.removeItem("products_cache");
         await AsyncStorage.removeItem("products_cache_timestamp");
 
-        // Reset input fields
         setName("");
         setPrice("");
         setQuantity("");
 
         navigation.goBack();
       } else {
-        Toast.show({
-          type: "error",
-          text1: "Failed to Add Product",
-          text2: data?.message,
-        });
+        Toast.show({ type: "error", text1: "Failed to Add", text2: data?.message });
       }
-    } catch (error) {
-      Toast.show({
-        type: "error",
-        text1: "Error",
-        text2: "Unable to add product",
-      });
+    } catch (err) {
+      Toast.show({ type: "error", text1: "Error", text2: "Unable to add product" });
     } finally {
       setLoading(false);
     }
@@ -118,49 +100,59 @@ const AddProductScreen = () => {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
       style={{ flex: 1 }}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <View style={styles.container}>
-        <Text style={styles.title}>Add New Product</Text>
 
-        <TextInput
-          placeholder="Product Name"
-          placeholderTextColor="#6b7280"
-          value={name}
-          onChangeText={setName}
-          style={styles.input}
-        />
+        {/* Custom header */}
+        <AppHeader title="Add Product" />
 
-        <TextInput
-          placeholder="Price"
-          placeholderTextColor="#6b7280"
-          value={price}
-          onChangeText={setPrice}
-          keyboardType="numeric"
-          style={styles.input}
-        />
-
-        <TextInput
-          placeholder="Quantity"
-          placeholderTextColor="#6b7280"
-          value={quantity}
-          onChangeText={setQuantity}
-          keyboardType="numeric"
-          style={styles.input}
-        />
-
-        <TouchableOpacity
-          style={styles.saveBtn}
-          onPress={handleAdd}
-          disabled={loading}
+        {/* Scroll wrapper */}
+        <ScrollView
+          style={styles.scrollArea}
+          contentContainerStyle={styles.scrollContent}
         >
-          {loading ? (
-            <ActivityIndicator color="#ffffff" />
-          ) : (
-            <Text style={styles.saveText}>Add Product</Text>
-          )}
-        </TouchableOpacity>
+          <Text style={styles.title}>Add New Product</Text>
+
+          <TextInput
+            placeholder="Product Name"
+            placeholderTextColor="#6b7280"
+            value={name}
+            onChangeText={setName}
+            style={styles.input}
+          />
+
+          <TextInput
+            placeholder="Price"
+            placeholderTextColor="#6b7280"
+            value={price}
+            onChangeText={setPrice}
+            keyboardType="numeric"
+            style={styles.input}
+          />
+
+          <TextInput
+            placeholder="Quantity"
+            placeholderTextColor="#6b7280"
+            value={quantity}
+            onChangeText={setQuantity}
+            keyboardType="numeric"
+            style={styles.input}
+          />
+
+          <TouchableOpacity
+            style={styles.saveBtn}
+            onPress={handleAdd}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#ffffff" />
+            ) : (
+              <Text style={styles.saveText}>Add Product</Text>
+            )}
+          </TouchableOpacity>
+        </ScrollView>
       </View>
     </KeyboardAvoidingView>
   );
@@ -171,8 +163,17 @@ export default AddProductScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
     backgroundColor: "#0f1115",
+  },
+
+  scrollArea: {
+    flex: 1,
+    paddingHorizontal: 16, // ← restore padding
+    paddingTop: 10,
+  },
+
+  scrollContent: {
+    paddingBottom: 40,
   },
 
   title: {

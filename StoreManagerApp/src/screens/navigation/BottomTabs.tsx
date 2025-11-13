@@ -4,7 +4,6 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 
 import HomeScreen from '../home/HomeScreen';
 import ProductsScreen from '../products/ProductsScreen';
-import AdminScreen from '../admin/AdminScreen';
 import DashboardScreen from '../dashboard/DashboardScreen';
 
 const Tab = createBottomTabNavigator();
@@ -42,7 +41,6 @@ const BottomTabs = () => {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="Products" component={ProductsScreen} />
       <Tab.Screen name="Dashboard" component={DashboardScreen} />
-      <Tab.Screen name="Admin" component={AdminScreen} />
     </Tab.Navigator>
   );
 };

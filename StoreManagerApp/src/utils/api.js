@@ -22,10 +22,14 @@ const safeJson = async (res) => {
  */
 export const apiGet = async (endpoint) => {
   try {
+    const token = await AsyncStorage.getItem("token");
+
     const res = await fetch(`${BASE_URL}${endpoint}`, {
       method: "GET",
       headers: {
         "Accept": "application/json",
+        "Content-Type": "application/json",
+        Authorization: token ? `Bearer ${token}` : "",
       },
     });
 
@@ -35,6 +39,7 @@ export const apiGet = async (endpoint) => {
     return { error: "Network error" };
   }
 };
+
 
 /**
  * POST / PUT / DELETE with Authorization header

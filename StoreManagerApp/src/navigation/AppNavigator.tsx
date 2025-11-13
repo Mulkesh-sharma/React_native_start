@@ -17,11 +17,12 @@ import AddProductScreen from '../screens/products/AddProductScreen';
 import EditProductScreen from '../screens/products/EditProductScreen';
 
 // ADMIN
-import AdminScreen from '../screens/admin/AdminScreen';
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import ProfileScreen from '../screens/admin/ProfileScreen';
 
 import { Product } from '../context/StoreContext';
+import ProfileScreenMain from '../screens/admin/ProfileScreenMain';
+import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 
 export type RootStackParamList = {
   Login: undefined;
@@ -33,10 +34,10 @@ export type RootStackParamList = {
   ProductDetail: { product: Product };
   AddProduct: undefined;
   EditProduct: { product: Product };
-
-  Admin: undefined;
   Profile: undefined;
   Dashboard: undefined;
+  ProfileMain: undefined;
+  ForgotPassword: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -52,6 +53,11 @@ const AppNavigator = () => {
         <>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Signup" component={SignupScreen} />
+          <Stack.Screen
+            name="ForgotPassword"
+            component={ForgotPasswordScreen}
+            options={{ headerShown: false }}
+          />
         </>
       ) : (
         <>
@@ -60,43 +66,36 @@ const AppNavigator = () => {
           <Stack.Screen
             name="Products"
             component={ProductsScreen}
-            options={{ headerShown: true, title: 'Products' }}
           />
 
           <Stack.Screen
             name="ProductDetail"
             component={ProductDetailScreen}
-            options={{ headerShown: true, title: 'Product Details' }}
           />
 
           <Stack.Screen
             name="AddProduct"
             component={AddProductScreen}
-            options={{ headerShown: true, title: 'Add Product' }}
           />
 
           <Stack.Screen
             name="EditProduct"
             component={EditProductScreen}
-            options={{ headerShown: true, title: 'Edit Product' }}
-          />
-
-          <Stack.Screen
-            name="Admin"
-            component={AdminScreen}
-            options={{ headerShown: true, title: 'Admin Panel' }}
           />
 
           <Stack.Screen
             name="Dashboard"
             component={DashboardScreen}
-            options={{ headerShown: true, title: 'Dashboard' }}
           />
           <Stack.Screen
             name="Profile"
             component={ProfileScreen}
-            options={{ title: 'Profile' }}
           />
+          <Stack.Screen
+            name="ProfileMain"
+            component={ProfileScreenMain}
+          />
+          
         </>
       )}
     </Stack.Navigator>

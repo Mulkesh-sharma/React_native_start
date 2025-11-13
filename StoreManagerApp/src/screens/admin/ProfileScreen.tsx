@@ -1,5 +1,4 @@
-// src/screens/admin/ProfileScreen.tsx
-import React, { useMemo, useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -7,465 +6,380 @@ import {
   ScrollView,
   TextInput,
   Pressable,
-  Image,
+  Modal,
   KeyboardAvoidingView,
   Platform,
-  Modal,
-  Alert,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useNavigation } from '@react-navigation/native';
-import Icon from 'react-native-vector-icons/Feather';
-import { useAuth } from '../../context/AuthContext';
+  ActivityIndicator,
+  Animated,
+} from "react-native";
 
-type ProfileForm = {
-  storeName: string;
-  ownerName: string;
-  type: string;
-  email: string;
-  photoUri?: string | null;
-};
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import Toast from "react-native-toast-message";
+import { useAuth } from "../../context/AuthContext";
+import { colors } from "../../styles/globalStyles";
 
 const STORE_TYPES = [
-  'Groceries Store',
-  'Dairy',
-  'Pharmacy',
-  'Bakery',
-  'Stationery',
-  'Electronics',
-  'Other',
+  "Groceries Store",
+  "Dairy",
+  "Pharmacy",
+  "Bakery",
+  "Stationery",
+  "Electronics",
+  "Other",
 ];
 
 export default function ProfileScreen() {
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation<any>(); // ✅ ADDED
-  const { logout } = useAuth(); // ✅ ADDED
+  const { user, token, refreshProfile, setUserLocally, logout } = useAuth();
 
-  const [form, setForm] = useState<ProfileForm>({
-    storeName: '',
-    ownerName: '',
-    type: '',
-    email: '',
-    photoUri: null,
+  // ---------------- FORM STATE ----------------
+  const [form, setForm] = useState({
+    name: user?.name || "",
+    email: user?.email || "",
+    phone: user?.phone || "",
+    storeName: user?.storeName || "",
+    ownerName: user?.ownerName || "",
+    storeType: user?.storeType || "",
   });
 
-  const [isTypePickerOpen, setTypePickerOpen] = useState(false);
-  const [isPwdModalOpen, setPwdModalOpen] = useState(false);
-  const [oldPwd, setOldPwd] = useState('');
-  const [newPwd, setNewPwd] = useState('');
   const [saving, setSaving] = useState(false);
+  const [typePickerOpen, setTypePickerOpen] = useState(false);
 
-  const canSave = useMemo(() => {
-    return (
-      form.storeName.trim().length > 1 &&
-      form.ownerName.trim().length > 1 &&
-      form.type.trim().length > 0 &&
-      form.email.trim().length > 3
-    );
-  }, [form]);
+  // Password modal
+  const [pwdModalOpen, setPwdModalOpen] = useState(false);
+  const [oldPwd, setOldPwd] = useState("");
+  const [newPwd, setNewPwd] = useState("");
 
-  function onChange<K extends keyof ProfileForm>(
-    key: K,
-    value: ProfileForm[K],
-  ) {
-    setForm(prev => ({ ...prev, [key]: value }));
-  }
+  // Animation for premium effects
+  const fadeAnim = useState(new Animated.Value(0))[0];
+  React.useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 350,
+      useNativeDriver: true,
+    }).start();
+  }, []);
 
-  function onPickPhoto() {
-    Alert.alert('Pick Photo', 'Integrate your image picker here.');
-  }
+  // ---------------- UPDATE FIELD ----------------
+  const updateField = (key: string, val: string) => {
+    setForm((prev) => ({ ...prev, [key]: val }));
+  };
 
-  async function onSaveProfile() {
+  // ---------------- SAVE PROFILE ----------------
+  const saveProfile = async () => {
+    setSaving(true);
     try {
-      if (!canSave) {
-        Alert.alert('Incomplete', 'Please fill all required fields.');
-        return;
+      const res = await fetch(
+        "https://backend-api-rwpt.onrender.com/auth/profile",
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(form),
+        }
+      );
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setUserLocally(data.user);
+        refreshProfile();
+        Toast.show({ type: "success", text1: "Profile Updated Successfully" });
+      } else {
+        Toast.show({ type: "error", text1: "Update Failed", text2: data?.message });
       }
-
-      setSaving(true);
-
-      Alert.alert('Saved', 'Your profile was updated.');
-    } catch (e) {
-      Alert.alert('Error', 'Failed to save profile. Please try again.');
-    } finally {
-      setSaving(false);
+    } catch (err) {
+      Toast.show({ type: "error", text1: "Network Error" });
     }
-  }
+    setSaving(false);
+  };
 
-  async function onChangePassword() {
+  // ---------------- CHANGE PASSWORD ----------------
+  const changePassword = async () => {
+    if (!oldPwd || !newPwd) {
+      Toast.show({ type: "error", text1: "Please fill both fields" });
+      return;
+    }
+
     try {
-      if (!oldPwd || !newPwd) {
-        Alert.alert('Missing', 'Please enter both old and new passwords.');
-        return;
+      const res = await fetch(
+        "https://backend-api-rwpt.onrender.com/auth/change-password",
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd }),
+        }
+      );
+
+      const data = await res.json();
+      if (res.ok) {
+        Toast.show({ type: "success", text1: "Password Updated" });
+        setPwdModalOpen(false);
+        setOldPwd("");
+        setNewPwd("");
+      } else {
+        Toast.show({ type: "error", text1: "Failed", text2: data?.message });
       }
-
-      setPwdModalOpen(false);
-      setOldPwd('');
-      setNewPwd('');
-
-      Alert.alert('Password Updated', 'Your password has been changed.');
-    } catch (e) {
-      Alert.alert('Error', 'Failed to change password.');
+    } catch (err) {
+      Toast.show({ type: "error", text1: "Password Update Error" });
     }
-  }
-
-  // ✅ LOGOUT FUNCTIONALITY
-  function handleLogout() {
-    logout(); // clear user data from context
-  }
+  };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <Animated.View
+      style={[styles.container, { paddingTop: insets.top + 10, opacity: fadeAnim }]}
+    >
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
       >
-        <ScrollView
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Header card */}
-          <View style={styles.cardHero}>
-            <Pressable onPress={onPickPhoto} style={styles.avatarWrap}>
-              {/* <Image
-                source={
-                  form.photoUri
-                    ? { uri: form.photoUri }
-                    : require('../../assets/avatar-placeholder.png')
-                }
-                style={styles.avatar}
-              /> */}
-              <View style={styles.avatarEdit}>
-                <Icon name="camera" size={16} />
-              </View>
-            </Pressable>
-
-            <View style={{ flex: 1 }}>
-              <Text style={styles.heroTitle}>
-                {form.storeName || 'Your Store'}
-              </Text>
-              <Text style={styles.heroSub}>
-                {form.type || 'Select Type'} • {form.ownerName || 'Owner'}
-              </Text>
+        <ScrollView contentContainerStyle={styles.scroll}>
+          {/* HEADER */}
+          <View style={styles.headerCard}>
+            <View style={styles.avatarCircle}>
+              <Ionicons name="person" size={50} color={colors.primary} />
             </View>
+            <Text style={styles.headerName}>{form.name}</Text>
+            <Text style={styles.headerEmail}>{form.email}</Text>
           </View>
 
-          {/* Form card */}
+          {/* PERSONAL INFO */}
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Business Info</Text>
+            <Text style={styles.cardTitle}>Personal Info</Text>
 
-            <LabeledInput
-              label="Store Name"
-              value={form.storeName}
-              onChangeText={t => onChange('storeName', t)}
-              placeholder="e.g., Fresh Mart"
-            />
+            <Field label="Full Name" value={form.name} onChangeText={(t) => updateField("name", t)} />
+            <Field label="Email" value={form.email} keyboardType="email-address"
+              onChangeText={(t) => updateField("email", t)} />
+            <Field label="Phone" value={form.phone} keyboardType="phone-pad"
+              onChangeText={(t) => updateField("phone", t)} />
 
-            <LabeledInput
-              label="Owner Name"
-              value={form.ownerName}
-              onChangeText={t => onChange('ownerName', t)}
-              placeholder="e.g., Rohan Sharma"
-            />
-
-            <Pressable
-              onPress={() => setTypePickerOpen(true)}
-              style={styles.select}
-            >
-              <Text style={styles.selectLabel}>Type</Text>
-              <View style={styles.selectRow}>
-                <Text style={styles.selectValue}>
-                  {form.type || 'Select store type'}
-                </Text>
-                <Icon name="chevron-right" size={18} />
-              </View>
+            <Pressable style={styles.pwdBtn} onPress={() => setPwdModalOpen(true)}>
+              <Ionicons name="lock-closed-outline" size={18} color={colors.primary} />
+              <Text style={styles.pwdBtnText}>Change Password</Text>
             </Pressable>
           </View>
 
+          {/* STORE INFO */}
           <View style={styles.card}>
-            <Text style={styles.sectionTitle}>Account</Text>
+            <Text style={styles.cardTitle}>Store Details</Text>
 
-            <LabeledInput
-              label="Email"
-              value={form.email}
-              onChangeText={t => onChange('email', t)}
-              placeholder="you@store.com"
-              keyboardType="email-address"
-              autoCapitalize="none"
-            />
+            <Field label="Store Name" value={form.storeName} onChangeText={(t) => updateField("storeName", t)} />
+            <Field label="Owner Name" value={form.ownerName} onChangeText={(t) => updateField("ownerName", t)} />
 
-            <Pressable
-              onPress={() => setPwdModalOpen(true)}
-              style={styles.inlineButton}
-            >
-              <Icon name="lock" size={16} />
-              <Text style={styles.inlineButtonText}>Change Password</Text>
+            <Pressable style={styles.selector} onPress={() => setTypePickerOpen(true)}>
+              <Text style={styles.selectorLabel}>Store Type</Text>
+              <Text style={styles.selectorValue}>
+                {form.storeType || "Select Type"}
+              </Text>
             </Pressable>
           </View>
 
-          <Pressable
-            disabled={!canSave || saving}
-            onPress={onSaveProfile}
-            style={[styles.saveBtn, (!canSave || saving) && { opacity: 0.6 }]}
-          >
-            <Text style={styles.saveBtnText}>
-              {saving ? 'Saving...' : 'Save Changes'}
-            </Text>
+          {/* SAVE BTN */}
+          <Pressable style={styles.saveBtn} onPress={saveProfile} disabled={saving}>
+            {saving ? <ActivityIndicator color="#fff" /> : <Text style={styles.saveText}>Save Changes</Text>}
           </Pressable>
 
-          <Pressable onPress={handleLogout} style={styles.logoutBtn}>
+          {/* LOGOUT */}
+          <Pressable style={styles.logoutBtn} onPress={logout}>
             <Text style={styles.logoutText}>Logout</Text>
           </Pressable>
-
-          <View style={{ height: 24 }} />
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Type Picker Modal */}
-      <Modal
-        visible={isTypePickerOpen}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setTypePickerOpen(false)}
-      >
-        <Pressable
-          style={styles.backdrop}
-          onPress={() => setTypePickerOpen(false)}
-        />
+      {/* TYPE PICKER */}
+      <Modal visible={typePickerOpen} transparent animationType="slide">
+        <Pressable style={styles.backdrop} onPress={() => setTypePickerOpen(false)} />
         <View style={styles.sheet}>
-          <View style={styles.sheetHandle} />
           <Text style={styles.sheetTitle}>Select Store Type</Text>
-          {STORE_TYPES.map(t => (
+
+          {STORE_TYPES.map((t) => (
             <Pressable
               key={t}
+              style={styles.sheetItem}
               onPress={() => {
-                onChange('type', t);
+                updateField("storeType", t);
                 setTypePickerOpen(false);
               }}
-              style={styles.sheetRow}
             >
-              <Text style={styles.sheetRowText}>{t}</Text>
-              {form.type === t ? <Icon name="check" size={18} /> : null}
+              <Text style={styles.sheetText}>{t}</Text>
+              {form.storeType === t && <Ionicons name="checkmark" size={20} color={colors.primary} />}
             </Pressable>
           ))}
         </View>
       </Modal>
 
-      {/* Password Modal */}
-      <Modal
-        visible={isPwdModalOpen}
-        animationType="fade"
-        transparent
-        onRequestClose={() => setPwdModalOpen(false)}
-      >
-        <Pressable
-          style={styles.backdrop}
-          onPress={() => setPwdModalOpen(false)}
-        />
-        <View style={styles.modalCard}>
+      {/* PASSWORD MODAL */}
+      <Modal visible={pwdModalOpen} transparent animationType="fade">
+        <Pressable style={styles.backdrop} onPress={() => setPwdModalOpen(false)} />
+
+        <View style={styles.passwordCard}>
           <Text style={styles.modalTitle}>Change Password</Text>
-          <TextInput
-            style={styles.input}
-            value={oldPwd}
-            onChangeText={setOldPwd}
-            placeholder="Old password"
-            secureTextEntry
-          />
-          <TextInput
-            style={styles.input}
-            value={newPwd}
-            onChangeText={setNewPwd}
-            placeholder="New password"
-            secureTextEntry
-          />
-          <Pressable onPress={onChangePassword} style={styles.modalBtn}>
+
+          <Field label="Old Password" secureTextEntry value={oldPwd} onChangeText={setOldPwd} />
+          <Field label="New Password" secureTextEntry value={newPwd} onChangeText={setNewPwd} />
+
+          <Pressable style={styles.modalBtn} onPress={changePassword}>
             <Text style={styles.modalBtnText}>Update Password</Text>
           </Pressable>
         </View>
       </Modal>
-    </View>
+    </Animated.View>
   );
 }
 
-function LabeledInput(props: any) {
-  return (
-    <View style={{ marginBottom: 16 }}>
-      <Text style={styles.label}>{props.label}</Text>
-      <TextInput
-        value={props.value}
-        onChangeText={props.onChangeText}
-        placeholder={props.placeholder}
-        keyboardType={props.keyboardType}
-        autoCapitalize={props.autoCapitalize}
-        style={styles.input}
-      />
-    </View>
-  );
-}
+// ---------------- FIELD COMPONENT ----------------
+const Field = ({ label, ...props }: any) => (
+  <View style={{ marginBottom: 14 }}>
+    <Text style={styles.label}>{label}</Text>
+    <TextInput {...props} style={styles.input} placeholderTextColor="#6b7280" />
+  </View>
+);
 
+// ---------------- STYLES ----------------
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0f1115' },
-  content: { padding: 16 },
-  cardHero: {
-    flexDirection: 'row',
-    gap: 16,
-    padding: 16,
-    borderRadius: 16,
-    backgroundColor: '#171a21',
-    alignItems: 'center',
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#2a2f3a',
+  container: { flex: 1, backgroundColor: "#0f1115" },
+  scroll: { padding: 16, paddingBottom: 50 },
+
+  headerCard: {
+    alignItems: "center",
+    marginBottom: 22,
+    paddingTop: 6,
   },
-  avatarWrap: { width: 72, height: 72, borderRadius: 16, overflow: 'hidden' },
-  avatar: { width: '100%', height: '100%' },
-  avatarEdit: {
-    position: 'absolute',
-    right: 6,
-    bottom: 6,
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 4,
+
+  avatarCircle: {
+    width: 92,
+    height: 92,
+    borderRadius: 46,
+    backgroundColor: "#171a21",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "rgba(79,140,255,0.3)",
   },
-  heroTitle: { color: 'white', fontSize: 20, fontWeight: '700' },
-  heroSub: { color: '#b6c0cf', marginTop: 4 },
+
+  headerName: {
+    marginTop: 12,
+    fontSize: 22,
+    color: "#fff",
+    fontWeight: "700",
+  },
+  headerEmail: { color: "#b6c0cf", marginTop: 4 },
+
   card: {
-    padding: 16,
+    backgroundColor: "#171a21",
     borderRadius: 16,
-    backgroundColor: '#171a21',
-    marginBottom: 16,
+    padding: 16,
+    marginBottom: 18,
     borderWidth: 1,
-    borderColor: '#2a2f3a',
+    borderColor: "#2a2f3a",
   },
-  sectionTitle: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 12,
-  },
-  label: { color: '#b6c0cf', marginBottom: 8 },
+
+  cardTitle: { fontSize: 16, fontWeight: "700", color: "#fff", marginBottom: 14 },
+
+  label: { color: "#b6c0cf", marginBottom: 6 },
+
   input: {
-    backgroundColor: '#0f1115',
-    color: 'white',
+    backgroundColor: "#0f1115",
+    padding: 14,
     borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    marginBottom: 4,
+    color: "#fff",
     borderWidth: 1,
-    borderColor: '#2a2f3a',
+    borderColor: "#2a2f3a",
   },
-  select: {
-    marginTop: 4,
+
+  pwdBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "rgba(79,140,255,0.12)",
     padding: 12,
     borderRadius: 12,
-    backgroundColor: '#0f1115',
+    marginTop: 6,
     borderWidth: 1,
-    borderColor: '#2a2f3a',
+    borderColor: "rgba(79,140,255,0.35)",
   },
-  selectLabel: { color: '#b6c0cf', marginBottom: 6 },
-  selectRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  selectValue: { color: 'white' },
-  inlineButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    backgroundColor: '#0f1115',
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#2a2f3a',
-    marginTop: 8,
-    alignSelf: 'flex-start',
-  },
-  inlineButtonText: { color: 'white', fontWeight: '600' },
-  saveBtn: {
-    marginTop: 8,
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: 'center',
-    backgroundColor: '#4f8cff',
-  },
-  saveBtnText: { color: 'white', fontSize: 16, fontWeight: '700' },
+  pwdBtnText: { color: "#4f8cff", marginLeft: 10, fontWeight: "600" },
 
-  // Type sheet
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)' },
+  selector: {
+    padding: 14,
+    borderRadius: 12,
+    backgroundColor: "#0f1115",
+    borderWidth: 1,
+    borderColor: "#2a2f3a",
+  },
+  selectorLabel: { color: "#b6c0cf", marginBottom: 6 },
+  selectorValue: { color: "#fff", fontWeight: "600" },
+
+  saveBtn: {
+    backgroundColor: "#4f8cff",
+    paddingVertical: 16,
+    borderRadius: 14,
+    alignItems: "center",
+    marginTop: 4,
+  },
+  saveText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+
+  logoutBtn: {
+    backgroundColor: "#ffffff",
+    paddingVertical: 14,
+    borderRadius: 14,
+    alignItems: "center",
+    marginTop: 16,
+  },
+  logoutText: { color: "#171a21", fontWeight: "700", fontSize: 16 },
+
+  backdrop: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.45)",
+  },
+
   sheet: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: '#171a21',
+    backgroundColor: "#171a21",
+    padding: 20,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
-    paddingBottom: 24,
+    position: "absolute",
+    bottom: 0,
+    width: "100%",
   },
-  sheetHandle: {
-    alignSelf: 'center',
-    width: 44,
-    height: 4,
-    backgroundColor: '#2a2f3a',
-    borderRadius: 2,
-    marginVertical: 10,
-  },
-  sheetTitle: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '700',
-    paddingHorizontal: 16,
-    marginBottom: 6,
-  },
-  sheetRow: {
-    paddingHorizontal: 16,
+  sheetTitle: { color: "#fff", fontSize: 16, fontWeight: "700", marginBottom: 16 },
+  sheetItem: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#2a2f3a',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    borderBottomWidth: 0.5,
+    borderBottomColor: "#2a2f3a",
   },
-  sheetRowText: { color: 'white' },
+  sheetText: { color: "#fff" },
 
-  // Password modal
-  modalCard: {
-    position: 'absolute',
-    left: 16,
-    right: 16,
-    top: '25%',
-    backgroundColor: '#171a21',
+  passwordCard: {
+    backgroundColor: "#171a21",
+    padding: 20,
     borderRadius: 16,
-    padding: 16,
     borderWidth: 1,
-    borderColor: '#2a2f3a',
+    borderColor: "#2a2f3a",
+    position: "absolute",
+    top: "25%",
+    left: 20,
+    right: 20,
   },
   modalTitle: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '700',
-    marginBottom: 12,
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "700",
+    marginBottom: 14,
   },
   modalBtn: {
-    marginTop: 8,
+    marginTop: 14,
+    padding: 14,
+    backgroundColor: "#4f8cff",
     borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: 'center',
-    backgroundColor: '#4f8cff',
+    alignItems: "center",
   },
-  modalBtnText: { color: 'white', fontWeight: '700' },
-  logoutBtn: {
-    marginTop: 12,
-    backgroundColor: 'white',
-    paddingVertical: 12,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  logoutText: {
-    color: '#171a21',
-    fontWeight: '700',
-    fontSize: 16,
-  },
+  modalBtnText: { color: "#fff", fontWeight: "700" },
 });

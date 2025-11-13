@@ -2,8 +2,8 @@ import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
-  FlatList,
   StyleSheet,
+  FlatList,
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
@@ -11,160 +11,101 @@ import {
 } from "react-native";
 
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import Toast from "react-native-toast-message";
 import Ionicons from "react-native-vector-icons/Ionicons";
-import AppHeader from "../../components/AppHeader";
+import Toast from "react-native-toast-message";
 
-const API_URL = "https://backend-api-rwpt.onrender.com/products";
-const CACHE_DURATION = 10 * 60 * 1000;
+import AppHeader from "../../components/AppHeader";
+import { useStore } from "../../context/StoreContext";
 
 const ProductsScreen = () => {
-  // -----------------------------------
-  // ALL HOOKS MUST COME FIRST
-  // -----------------------------------
   const navigation = useNavigation<any>();
+  const { products, fetchProducts, deleteProduct } = useStore();
 
-  const [products, setProducts] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // -----------------------------------
-  // FETCH PRODUCTS (NO CONDITIONAL HOOKS!)
-  // -----------------------------------
-  const fetchProducts = async (forceRefresh = false) => {
+  // -------------------------------------------------------
+  // Load products ONCE when screen is focused
+  // -------------------------------------------------------
+  useFocusEffect(
+    useCallback(() => {
+      let mounted = true;
+
+      const loadProducts = async () => {
+        try {
+          setInitialLoading(true);
+          await fetchProducts();
+        } finally {
+          if (mounted) setInitialLoading(false);
+        }
+      };
+
+      loadProducts();
+
+      return () => {
+        mounted = false;
+      };
+    }, [])
+  );
+
+  // -------------------------------------------------------
+  // Pull-to-refresh
+  // -------------------------------------------------------
+  const onRefresh = async () => {
     try {
-      setLoading(true);
-
-      const cached = await AsyncStorage.getItem("products_cache");
-      const cachedTime = await AsyncStorage.getItem("products_cache_timestamp");
-      const now = Date.now();
-
-      // Use cache if valid
-      if (
-        !forceRefresh &&
-        cached &&
-        cachedTime &&
-        now - Number(cachedTime) < CACHE_DURATION
-      ) {
-        setProducts(JSON.parse(cached));
-        setLoading(false);
-        return;
-      }
-
-      const token = await AsyncStorage.getItem("token");
-      if (!token) {
-        Toast.show({
-          type: "error",
-          text1: "Session expired",
-        });
-        navigation.navigate("Login");
-        return;
-      }
-
-      const response = await fetch(API_URL, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setProducts(data.products);
-        await AsyncStorage.setItem(
-          "products_cache",
-          JSON.stringify(data.products)
-        );
-        await AsyncStorage.setItem(
-          "products_cache_timestamp",
-          now.toString()
-        );
-      } else {
-        Toast.show({
-          type: "error",
-          text1: "Failed to load products",
-        });
-      }
-    } catch (err) {
-      Toast.show({
-        type: "error",
-        text1: "Error loading products",
-      });
+      setRefreshing(true);
+      await fetchProducts();
     } finally {
-      setLoading(false);
       setRefreshing(false);
     }
   };
 
-  // -----------------------------------
-  // useFocusEffect MUST BE OUTSIDE ANY CONDITIONS
-  // -----------------------------------
-  useFocusEffect(
-    useCallback(() => {
-      fetchProducts(false);
-    }, [])
-  );
-
-  // Pull-to-refresh
-  const onRefresh = () => {
-    setRefreshing(true);
-    fetchProducts(true);
-  };
-
-  // -----------------------------------
-  // DELETE PRODUCT (NO HOOKS HERE!)
-  // -----------------------------------
+  // -------------------------------------------------------
+  // Delete product
+  // -------------------------------------------------------
   const handleDelete = (id: string) => {
-    Alert.alert("Delete Product", "Are you sure?", [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Delete",
-        style: "destructive",
-        onPress: async () => {
-          try {
-            const token = await AsyncStorage.getItem("token");
+    Alert.alert(
+      "Delete Product",
+      "Are you sure you want to delete this product?",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            Toast.show({ type: "info", text1: "Deleting product..." });
 
-            const res = await fetch(`${API_URL}/${id}`, {
-              method: "DELETE",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
+            const res = await deleteProduct(id);
+            if (res?.deleted) {
               Toast.show({ type: "success", text1: "Product deleted" });
-
-              const updated = products.filter((p) => p._id !== id);
-              setProducts(updated);
-
-              await AsyncStorage.setItem(
-                "products_cache",
-                JSON.stringify(updated)
-              );
             } else {
-              Toast.show({
-                type: "error",
-                text1: "Delete failed",
-                text2: data?.message,
-              });
+              Toast.show({ type: "error", text1: "Delete failed" });
             }
-          } catch (error) {
-            Toast.show({
-              type: "error",
-              text1: "Error deleting product",
-            });
-          }
+          },
         },
-      },
-    ]);
+      ]
+    );
   };
 
-  // -----------------------------------
-  // RENDER — NO HOOKS BELOW THIS POINT
-  // -----------------------------------
+  // -------------------------------------------------------
+  // Initial Loading (Appears BELOW AppHeader)
+  // -------------------------------------------------------
+  if (initialLoading) {
+    return (
+      <View style={styles.container}>
+        <AppHeader title="Products" />
+
+        <View style={styles.loadingBelowHeader}>
+          <ActivityIndicator size="large" color="#ffffff" />
+          <Text style={styles.loadingText}>Loading Products...</Text>
+        </View>
+      </View>
+    );
+  }
+
+  // -------------------------------------------------------
+  // Main UI
+  // -------------------------------------------------------
   return (
     <View style={styles.container}>
       <AppHeader title="Products" />
@@ -186,14 +127,6 @@ const ProductsScreen = () => {
               <Ionicons name="add-circle-outline" size={22} color="#fff" />
               <Text style={styles.addText}>Add Product</Text>
             </TouchableOpacity>
-
-            {loading && (
-              <ActivityIndicator
-                size="large"
-                color="#4f8cff"
-                style={{ marginBottom: 20 }}
-              />
-            )}
           </>
         }
         renderItem={({ item }) => (
@@ -229,10 +162,9 @@ const ProductsScreen = () => {
           </TouchableOpacity>
         )}
         ListEmptyComponent={
-          !loading && (
-            <Text style={styles.emptyText}>No products found</Text>
-          )
+          <Text style={styles.emptyText}>No products found</Text>
         }
+        contentContainerStyle={{ paddingBottom: 30 }}
       />
     </View>
   );
@@ -240,60 +172,95 @@ const ProductsScreen = () => {
 
 export default ProductsScreen;
 
+// -------------------------------------------------------
+// STYLES
+// -------------------------------------------------------
+
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#0f1115" },
+  container: {
+    flex: 1,
+    backgroundColor: "#0f1115",
+  },
+
+  // Loader BELOW AppHeader
+  loadingBelowHeader: {
+    flex: 1,
+    backgroundColor: "#0f1115",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingTop: 20,
+  },
+
+  loadingText: { color: "#b6c0cf", marginTop: 8 },
+
   title: {
     fontSize: 22,
     fontWeight: "700",
-    textAlign: "center",
-    marginVertical: 16,
     color: "#fff",
-  },
-  addButton: {
-    flexDirection: "row",
-    justifyContent: "center",
-    backgroundColor: "#4f8cff",
-    paddingVertical: 14,
-    marginHorizontal: 16,
-    borderRadius: 12,
+    textAlign: "center",
+    marginTop: 16,
     marginBottom: 16,
   },
-  addText: { color: "#fff", fontWeight: "600", fontSize: 16 },
+
+  addButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginHorizontal: 16,
+    paddingVertical: 14,
+    backgroundColor: "#4f8cff",
+    borderRadius: 12,
+    marginBottom: 14,
+  },
+
+  addText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 6,
+  },
+
   card: {
     flexDirection: "row",
     backgroundColor: "#171a21",
     marginHorizontal: 16,
+    marginBottom: 12,
     padding: 16,
     borderRadius: 12,
     borderWidth: 1,
     borderColor: "#2a2f3a",
-    marginBottom: 12,
   },
+
   name: { color: "#fff", fontSize: 16, fontWeight: "600" },
-  price: { color: "#4f8cff", fontSize: 15, fontWeight: "600" },
-  qty: { color: "#b6c0cf", fontSize: 13 },
-  actionRow: { flexDirection: "row", gap: 10, marginLeft: "auto" },
+
+  price: { color: "#4f8cff", fontSize: 15, fontWeight: "700", marginTop: 3 },
+
+  qty: { color: "#b6c0cf", fontSize: 13, marginTop: 3 },
+
+  actionRow: { flexDirection: "row", gap: 8, marginLeft: "auto" },
+
   actionBtn: {
-    padding: 8,
-    borderRadius: 20,
-    borderWidth: 1,
     width: 36,
     height: 36,
-    justifyContent: "center",
+    borderRadius: 18,
     alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 1,
   },
+
   editBtn: {
-    backgroundColor: "rgba(79, 140, 255, 0.2)",
-    borderColor: "rgba(79, 140, 255, 0.4)",
+    backgroundColor: "rgba(79,140,255,0.2)",
+    borderColor: "rgba(79,140,255,0.4)",
   },
+
   deleteBtn: {
-    backgroundColor: "rgba(220, 53, 69, 0.2)",
-    borderColor: "rgba(220, 53, 69, 0.4)",
+    backgroundColor: "rgba(220,53,69,0.2)",
+    borderColor: "rgba(220,53,69,0.4)",
   },
+
   emptyText: {
-    textAlign: "center",
     color: "#b6c0cf",
+    textAlign: "center",
     marginTop: 40,
-    fontSize: 16,
   },
 });

@@ -1,16 +1,18 @@
-import React from 'react';
+import React from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-} from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import { Product } from '../../context/StoreContext';
-import { useStore } from '../../context/StoreContext';
-import { globalStyles } from '../../styles/globalStyles';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+  Alert,
+} from "react-native";
+import { useRoute, useNavigation } from "@react-navigation/native";
+import { Product } from "../../context/StoreContext";
+import { useStore } from "../../context/StoreContext";
+import Ionicons from "react-native-vector-icons/Ionicons";
+import AppHeader from "../../components/AppHeader";
+import { globalStyles } from "../../styles/globalStyles";
 
 const ProductDetailScreen = () => {
   const route = useRoute<any>();
@@ -20,47 +22,73 @@ const ProductDetailScreen = () => {
   const product: Product = route.params.product;
 
   const handleDelete = () => {
-    deleteProduct(product._id || product.id);
-    navigation.goBack();
+    Alert.alert(
+      "Delete Product",
+      `Are you sure you want to delete "${product.name}"?`,
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            await deleteProduct(product._id || product.id);
+            navigation.goBack();
+          },
+        },
+      ]
+    );
   };
 
   return (
     <View style={styles.container}>
+      {/* App Header */}
+      <AppHeader title="Product Details" />
 
-      <ScrollView 
+      <ScrollView
         style={globalStyles.scrollView}
-        contentContainerStyle={globalStyles.scrollContent}
+        contentContainerStyle={[globalStyles.scrollContent, { padding: 16 }]}
       >
+        {/* Title */}
         <Text style={styles.title}>{product.name}</Text>
 
-        <View style={styles.infoCard}>
-          <Text style={styles.label}>Price:</Text>
-          <Text style={styles.value}>₹{product.price}</Text>
+        {/* Info Card */}
+        <View style={styles.card}>
+          <View style={styles.row}>
+            <Text style={styles.label}>Price</Text>
+            <Text style={styles.value}>₹{product.price}</Text>
+          </View>
 
-          <Text style={styles.label}>Quantity:</Text>
-          <Text style={styles.value}>{product.quantity}</Text>
+          <View style={styles.row}>
+            <Text style={styles.label}>Quantity</Text>
+            <Text style={[styles.value, product.quantity < 5 && styles.lowStock]}>
+              {product.quantity}
+            </Text>
+          </View>
         </View>
 
+        {/* Description */}
         <Text style={styles.desc}>
-          This is a basic product description. You can update product details
-          using the Edit option below.
+          This item is part of your inventory system. You can edit any field
+          (name, price, quantity) using the edit button below.
         </Text>
 
-        {/* Buttons */}
-        <View style={styles.btnRow}>
+        {/* Actions */}
+        <View style={styles.actions}>
+          {/* Edit */}
           <TouchableOpacity
             style={[styles.btn, styles.editBtn]}
-            onPress={() => navigation.navigate('EditProduct', { product })}
+            onPress={() => navigation.navigate("EditProduct", { product })}
           >
-            <Ionicons name="create-outline" size={20} color="#4f8cff" />
+            <Ionicons name="create-outline" size={18} color="#4f8cff" />
             <Text style={styles.btnText}>Edit</Text>
           </TouchableOpacity>
 
+          {/* Delete */}
           <TouchableOpacity
             style={[styles.btn, styles.deleteBtn]}
             onPress={handleDelete}
           >
-            <Ionicons name="trash-outline" size={20} color="#ff5252" />
+            <Ionicons name="trash-outline" size={18} color="#ff5252" />
             <Text style={styles.btnText}>Delete</Text>
           </TouchableOpacity>
         </View>
@@ -72,80 +100,87 @@ const ProductDetailScreen = () => {
 export default ProductDetailScreen;
 
 const styles = StyleSheet.create({
-  container: { 
+  container: {
     flex: 1,
-    backgroundColor: '#0f1115',
+    backgroundColor: "#0f1115",
   },
 
   title: {
     fontSize: 24,
-    fontWeight: '700',
-    margin: 20,
-    color: '#ffffff',
-    textAlign: 'center',
+    fontWeight: "700",
+    color: "#ffffff",
+    textAlign: "center",
+    marginBottom: 20,
   },
 
-  infoCard: {
-    backgroundColor: '#171a21',
+  card: {
+    backgroundColor: "#171a21",
     padding: 20,
     borderRadius: 16,
-    marginBottom: 24,
     borderWidth: 1,
-    borderColor: '#2a2f3a',
+    borderColor: "#2a2f3a",
+    marginBottom: 24,
+  },
+
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 14,
   },
 
   label: {
-    fontSize: 15,
-    color: '#b6c0cf',
-    marginTop: 12,
-    marginBottom: 4,
+    color: "#b6c0cf",
+    fontSize: 16,
+    fontWeight: "500",
   },
 
   value: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#4f8cff',
+    color: "#4f8cff",
+    fontSize: 18,
+    fontWeight: "700",
+  },
+
+  lowStock: {
+    color: "#ff5252",
   },
 
   desc: {
+    color: "#b6c0cf",
     fontSize: 15,
     lineHeight: 22,
-    color: '#b6c0cf',
-    marginBottom: 30,
+    textAlign: "left",
+    marginBottom: 25,
   },
 
-  btnRow: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+  actions: {
+    flexDirection: "row",
     gap: 16,
-    marginBottom: 24,
   },
 
   btn: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: 14,
-    paddingHorizontal: 20,
     borderRadius: 12,
     borderWidth: 1,
+    gap: 8,
   },
 
   editBtn: {
-    backgroundColor: 'rgba(79, 140, 255, 0.2)',
-    borderColor: 'rgba(79, 140, 255, 0.4)',
+    backgroundColor: "rgba(79, 140, 255, 0.15)",
+    borderColor: "rgba(79, 140, 255, 0.3)",
   },
 
   deleteBtn: {
-    backgroundColor: 'rgba(220, 53, 69, 0.2)',
-    borderColor: 'rgba(220, 53, 69, 0.4)',
+    backgroundColor: "rgba(255, 82, 82, 0.15)",
+    borderColor: "rgba(255, 82, 82, 0.3)",
   },
 
   btnText: {
-    color: '#ffffff',
+    color: "#ffffff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

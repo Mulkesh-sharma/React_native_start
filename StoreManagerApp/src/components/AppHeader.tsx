@@ -32,7 +32,7 @@ const AppHeader = ({ title, isHome = false }: Props) => {
 
       {/* RIGHT SIDE - PROFILE BUTTON (VISIBLE EVERYWHERE) */}
       <TouchableOpacity
-        onPress={() => navigation.navigate("Profile")}
+        onPress={() => navigation.navigate("ProfileMain")}
         style={styles.profileBtn}
       >
         <Ionicons name="person-circle-outline" size={30} color="#fff" />
