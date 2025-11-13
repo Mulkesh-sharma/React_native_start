@@ -3,9 +3,11 @@ import { NavigationContainer } from "@react-navigation/native";
 import AppNavigator from "./src/navigation/AppNavigator";
 import { AuthProvider } from "./src/context/AuthContext";
 import { StoreProvider } from "./src/context/StoreContext";
+import Toast from "react-native-toast-message";
 
 const App = () => {
   return (
+    <>
     <AuthProvider>
       <StoreProvider>
         <NavigationContainer>
@@ -13,6 +15,8 @@ const App = () => {
         </NavigationContainer>
       </StoreProvider>
     </AuthProvider>
+    <Toast/>
+    </>
   );
 };
 
