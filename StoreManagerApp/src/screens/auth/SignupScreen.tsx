@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Animated,
   Easing,
+  ActivityIndicator,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
@@ -17,7 +18,7 @@ export default function SignupScreen() {
   const { signup } = useAuth();
 
   // ------------------------------
-  // INPUT FIELDS
+  // INPUT STATES
   // ------------------------------
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -25,8 +26,11 @@ export default function SignupScreen() {
   const [secure, setSecure] = useState(true);
   const [mood, setMood] = useState<"idle" | "typing" | "cover">("idle");
 
+  // NEW ⭐ Loader
+  const [loading, setLoading] = useState(false);
+
   // ------------------------------
-  // FIXED ANIMATION HOOKS
+  // ANIMATION VALUES (useRef fix)
   // ------------------------------
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(40)).current;
@@ -60,7 +64,7 @@ export default function SignupScreen() {
   const handlePwdBlur = () => setMood("idle");
 
   // ------------------------------
-  // SIGNUP PROCESS
+  // SIGNUP PROCESS (with loader)
   // ------------------------------
   const handleSignup = async () => {
     if (!name || !email || !password) {
@@ -68,7 +72,11 @@ export default function SignupScreen() {
       return;
     }
 
+    setLoading(true);
+
     const res = await signup(name, email, password);
+
+    setLoading(false);
 
     if (res?.success) {
       alert("Account created!");
@@ -79,7 +87,7 @@ export default function SignupScreen() {
   };
 
   // ------------------------------
-  // MASCOT RENDERER
+  // MASCOT REACTIONS
   // ------------------------------
   const renderMascot = () => {
     switch (mood) {
@@ -90,10 +98,10 @@ export default function SignupScreen() {
             <Ionicons name="hand-right-outline" size={28} color="#4f8cff" />
           </View>
         );
+
       case "typing":
-        return (
-          <Ionicons name="glasses-outline" size={38} color="#4f8cff" />
-        );
+        return <Ionicons name="glasses-outline" size={38} color="#4f8cff" />;
+
       default:
         return <Ionicons name="happy-outline" size={38} color="#4f8cff" />;
     }
@@ -165,10 +173,19 @@ export default function SignupScreen() {
         </View>
 
         {/* SIGNUP BUTTON */}
-        <TouchableOpacity style={styles.button} onPress={handleSignup}>
-          <Text style={styles.buttonText}>Sign Up</Text>
+        <TouchableOpacity
+          style={[styles.button, loading && { opacity: 0.7 }]}
+          onPress={handleSignup}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Sign Up</Text>
+          )}
         </TouchableOpacity>
 
+        {/* GO TO LOGIN */}
         <TouchableOpacity
           style={{ marginTop: 16 }}
           onPress={() => navigation.navigate("Login")}
@@ -202,7 +219,6 @@ const styles = StyleSheet.create({
     borderColor: "#2a2f3a",
   },
 
-  // Mascot
   avatarWrapper: { alignItems: "center", marginBottom: 20 },
   avatarCircle: {
     width: 110,
@@ -214,11 +230,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  faceRow: {
-    flexDirection: "row",
-    justifyContent: "center",
-    gap: 6,
-  },
+
+  faceRow: { flexDirection: "row", gap: 6 },
 
   heading: {
     fontSize: 26,
@@ -226,6 +239,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     textAlign: "center",
   },
+
   sub: {
     textAlign: "center",
     color: "#b6c0cf",
@@ -265,14 +279,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
 
-  switchText: {
-    textAlign: "center",
-    color: "#b6c0cf",
-    fontSize: 14,
-  },
+  switchText: { textAlign: "center", color: "#b6c0cf", fontSize: 14 },
 
-  link: {
-    color: "#4f8cff",
-    fontWeight: "700",
-  },
+  link: { color: "#4f8cff", fontWeight: "700" },
 });

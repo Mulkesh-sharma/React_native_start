@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Animated,
   Easing,
+  ActivityIndicator,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
@@ -16,15 +17,22 @@ export default function LoginScreen() {
   const navigation = useNavigation<any>();
   const { login } = useAuth();
 
+  // ----------------------
+  // ALL HOOKS AT TOP (NO CONDITIONS)
+  // ----------------------
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [secure, setSecure] = useState(true);
-  const [mood, setMood] = useState("idle"); // idle | look | cover
+  const [loading, setLoading] = useState(false);
+  const [mood, setMood] = useState<"idle" | "look" | "cover">("idle");
 
-  // FIXED: Animation values MUST BE useRef
+  // Animation refs
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(40)).current;
 
+  // ----------------------
+  // RUN ENTRY ANIMATION
+  // ----------------------
   useEffect(() => {
     Animated.parallel([
       Animated.timing(fadeAnim, {
@@ -40,8 +48,11 @@ export default function LoginScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [fadeAnim, slideAnim]);
 
+  // ----------------------
+  // EVENT HANDLERS
+  // ----------------------
   const handleEmailChange = (t: string) => {
     setEmail(t);
     setMood(t.length > 0 ? "look" : "idle");
@@ -55,11 +66,21 @@ export default function LoginScreen() {
       alert("All fields required");
       return;
     }
+
+    setLoading(true);
+
     const res = await login(email, password);
-    if (!res?.success) alert(res?.message || "Invalid login");
+
+    setLoading(false);
+
+    if (!res?.success) {
+      alert(res?.message || "Invalid login");
+    }
   };
 
-  // Facial animation based on mood
+  // ----------------------
+  // FACE RENDERER (NO HOOKS)
+  // ----------------------
   const renderFace = () => {
     if (mood === "cover") {
       return (
@@ -69,6 +90,7 @@ export default function LoginScreen() {
         </View>
       );
     }
+
     if (mood === "look") {
       return (
         <View style={styles.faceRow}>
@@ -82,6 +104,7 @@ export default function LoginScreen() {
         </View>
       );
     }
+
     return (
       <View style={styles.faceRow}>
         <Ionicons name="happy-outline" size={36} color="#4f8cff" />
@@ -89,6 +112,9 @@ export default function LoginScreen() {
     );
   };
 
+  // ----------------------
+  // UI
+  // ----------------------
   return (
     <View style={styles.container}>
       <Animated.View
@@ -141,7 +167,7 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Forgot Password BUTTON */}
+        {/* Forgot Password */}
         <TouchableOpacity
           onPress={() => navigation.navigate("ForgotPassword")}
           style={{ alignSelf: "flex-end", marginBottom: 10 }}
@@ -150,17 +176,25 @@ export default function LoginScreen() {
         </TouchableOpacity>
 
         {/* Login Button */}
-        <TouchableOpacity style={styles.button} onPress={handleLogin}>
-          <Text style={styles.buttonText}>Login</Text>
+        <TouchableOpacity
+          style={[styles.button, loading && { opacity: 0.7 }]}
+          disabled={loading}
+          onPress={handleLogin}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" size="small" />
+          ) : (
+            <Text style={styles.buttonText}>Login</Text>
+          )}
         </TouchableOpacity>
 
-        {/* Go to Signup */}
+        {/* Signup */}
         <TouchableOpacity
           onPress={() => navigation.navigate("Signup")}
           style={{ marginTop: 16 }}
         >
           <Text style={styles.switchText}>
-            Don’t have an account?
+            Don't have an account?
             <Text style={styles.highlight}> Sign up</Text>
           </Text>
         </TouchableOpacity>
@@ -184,7 +218,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#2a2f3a",
   },
-  avatarWrapper: { alignItems: "center", marginBottom: 16 },
+  avatarWrapper: { alignItems: "center", marginBottom: 20 },
   avatarCircle: {
     width: 105,
     height: 105,

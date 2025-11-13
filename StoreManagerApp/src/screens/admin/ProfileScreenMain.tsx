@@ -113,9 +113,10 @@ export default function ProfileScreenMain() {
 
         {/* LOGOUT BUTTON */}
         <Pressable style={styles.logoutBtn} onPress={handleLogout}>
-          <Icon name="log-out" size={18} color={colors.error} />
+          <Icon name="log-out" size={18} color="#fff" />
           <Text style={styles.logoutText}>Logout</Text>
         </Pressable>
+
       </ScrollView>
     </View>
   );
@@ -225,15 +226,20 @@ const styles = StyleSheet.create({
   logoutBtn: {
     flexDirection: "row",
     justifyContent: "center",
+    alignItems: "center",
     paddingVertical: spacing.md,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: colors.error,
+    borderColor: "rgba(255,255,255,0.7)",
+    backgroundColor: "rgba(255,255,255,0.06)",
+    marginTop: spacing.md,
   },
 
   logoutText: {
-    color: colors.error,
+    color: "#fff",
     fontWeight: "700",
     marginLeft: 8,
+    fontSize: 15,
   },
+
 });

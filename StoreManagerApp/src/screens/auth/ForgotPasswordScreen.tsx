@@ -8,6 +8,7 @@ import {
   Animated,
   Easing,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
@@ -18,8 +19,11 @@ export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState("");
   const [mood, setMood] = useState<"idle" | "typing">("idle");
 
+  // NEW ⭐ Loader state
+  const [loading, setLoading] = useState(false);
+
   // --------------------------
-  // SAFE FIXED ANIMATIONS
+  // SAFE ANIMATION VALUES
   // --------------------------
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(40)).current;
@@ -42,29 +46,26 @@ export default function ForgotPasswordScreen() {
   }, []);
 
   // --------------------------
-  // MASCOT LOGIC
+  // MASCOT
   // --------------------------
   const renderMascot = () => {
-    switch (mood) {
-      case "typing":
-        return (
-          <Ionicons name="glasses-outline" size={40} color="#4f8cff" />
-        );
-      default:
-        return (
-          <Ionicons name="help-circle-outline" size={44} color="#4f8cff" />
-        );
-    }
+    return mood === "typing" ? (
+      <Ionicons name="glasses-outline" size={40} color="#4f8cff" />
+    ) : (
+      <Ionicons name="help-circle-outline" size={44} color="#4f8cff" />
+    );
   };
 
   // --------------------------
-  // RESET PASSWORD REQUEST
+  // SEND RESET EMAIL
   // --------------------------
   const handleSendLink = async () => {
     if (!email.trim()) {
       Alert.alert("Error", "Email is required");
       return;
     }
+
+    setLoading(true);
 
     try {
       const res = await fetch(
@@ -79,10 +80,7 @@ export default function ForgotPasswordScreen() {
       const data = await res.json();
 
       if (res.ok) {
-        Alert.alert(
-          "Email Sent",
-          data?.message || "Reset link sent to your email!"
-        );
+        Alert.alert("Success", data?.message || "Reset link sent!");
         navigation.goBack();
       } else {
         Alert.alert("Error", data?.message || "Failed to send reset link");
@@ -90,8 +88,12 @@ export default function ForgotPasswordScreen() {
     } catch (err) {
       Alert.alert("Error", "Something went wrong");
     }
+
+    setLoading(false);
   };
 
+  // --------------------------
+  // UI
   // --------------------------
   return (
     <View style={styles.container}>
@@ -101,13 +103,14 @@ export default function ForgotPasswordScreen() {
           { opacity: fadeAnim, transform: [{ translateY: slideAnim }] },
         ]}
       >
+        {/* Mascot */}
         <View style={styles.avatarWrapper}>
           <View style={styles.avatarCircle}>{renderMascot()}</View>
         </View>
 
         <Text style={styles.heading}>Forgot Password?</Text>
         <Text style={styles.sub}>
-          Enter your registered email to receive a reset link
+          Enter your registered email to receive a password reset link.
         </Text>
 
         <View style={styles.inputBox}>
@@ -125,8 +128,17 @@ export default function ForgotPasswordScreen() {
           />
         </View>
 
-        <TouchableOpacity style={styles.button} onPress={handleSendLink}>
-          <Text style={styles.buttonText}>Send Reset Link</Text>
+        {/* SEND LINK BUTTON WITH LOADER */}
+        <TouchableOpacity
+          style={[styles.button, loading && { opacity: 0.7 }]}
+          onPress={handleSendLink}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.buttonText}>Send Reset Link</Text>
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -161,7 +173,6 @@ const styles = StyleSheet.create({
     borderColor: "#2a2f3a",
   },
 
-  // Mascot
   avatarWrapper: { alignItems: "center", marginBottom: 20 },
   avatarCircle: {
     width: 110,
@@ -180,6 +191,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     textAlign: "center",
   },
+
   sub: {
     textAlign: "center",
     color: "#b6c0cf",
