@@ -1,63 +1,127 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   View,
   Text,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   ActivityIndicator,
-  ScrollView,
-} from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { useStore } from '../../context/StoreContext';
-import { globalStyles } from '../../styles/globalStyles';
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+
+import { useNavigation } from "@react-navigation/native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import Toast from "react-native-toast-message";
+import { globalStyles } from "../../styles/globalStyles";
+
+const API_URL = "https://backend-api-rwpt.onrender.com/products";
 
 const AddProductScreen = () => {
   const navigation = useNavigation<any>();
-  const { addProduct } = useStore();
 
-  const [name, setName] = useState('');
-  const [price, setPrice] = useState('');
-  const [quantity, setQuantity] = useState('');
+  // ------------- HOOKS (always at top) ----------------
+  const [name, setName] = useState("");
+  const [price, setPrice] = useState("");
+  const [quantity, setQuantity] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // ------------- ADD PRODUCT ---------------------------
   const handleAdd = async () => {
     if (!name || !price || !quantity) {
-      Alert.alert('Error', 'All fields are required');
+      Toast.show({
+        type: "error",
+        text1: "Missing Fields",
+        text2: "All fields are required",
+      });
       return;
     }
 
     const priceNum = Number(price);
     const qtyNum = Number(quantity);
 
-    if (isNaN(priceNum) || isNaN(qtyNum) || priceNum <= 0 || qtyNum <= 0) {
-      Alert.alert('Error', 'Enter valid Price & Quantity');
+    if (isNaN(priceNum) || priceNum <= 0 || isNaN(qtyNum) || qtyNum <= 0) {
+      Toast.show({
+        type: "error",
+        text1: "Invalid Input",
+        text2: "Enter valid price & quantity",
+      });
       return;
     }
 
-    setLoading(true);
-    const res = await addProduct(name, priceNum, qtyNum);
-    setLoading(false);
+    try {
+      setLoading(true);
 
-    if (res?.message) {
-      Alert.alert('Success', res.message);
-      navigation.goBack();
-    } else {
-      Alert.alert('Error', 'Failed to add product');
+      const token = await AsyncStorage.getItem("token");
+      if (!token) {
+        Toast.show({
+          type: "error",
+          text1: "Unauthorized",
+          text2: "Please login again",
+        });
+        navigation.navigate("Login");
+        return;
+      }
+
+      // Send POST request
+      const response = await fetch(API_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: name.trim(),
+          price: priceNum,
+          quantity: qtyNum,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        Toast.show({
+          type: "success",
+          text1: "Product Added",
+          text2: `${name} has been added`,
+        });
+
+        // ---------------------------
+        // Clear cache so all screens reload fresh data
+        // ---------------------------
+        await AsyncStorage.removeItem("products_cache");
+        await AsyncStorage.removeItem("products_cache_timestamp");
+
+        // Reset input fields
+        setName("");
+        setPrice("");
+        setQuantity("");
+
+        navigation.goBack();
+      } else {
+        Toast.show({
+          type: "error",
+          text1: "Failed to Add Product",
+          text2: data?.message,
+        });
+      }
+    } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: "Unable to add product",
+      });
+    } finally {
+      setLoading(false);
     }
-
-    setName('');
-    setPrice('');
-    setQuantity('');
   };
 
   return (
-    <View style={styles.container}>
-      <ScrollView
-        style={globalStyles.scrollView}
-        contentContainerStyle={globalStyles.scrollContent}
-      >
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      style={{ flex: 1 }}
+    >
+      <View style={styles.container}>
         <Text style={styles.title}>Add New Product</Text>
 
         <TextInput
@@ -97,8 +161,8 @@ const AddProductScreen = () => {
             <Text style={styles.saveText}>Add Product</Text>
           )}
         </TouchableOpacity>
-      </ScrollView>
-    </View>
+      </View>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -108,41 +172,41 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: '#0f1115',
+    backgroundColor: "#0f1115",
   },
 
   title: {
     fontSize: 22,
-    fontWeight: '700',
+    fontWeight: "700",
     marginVertical: 24,
-    textAlign: 'center',
-    color: '#ffffff',
+    textAlign: "center",
+    color: "#ffffff",
   },
 
   input: {
-    backgroundColor: '#171a21',
+    backgroundColor: "#171a21",
     padding: 16,
     borderRadius: 12,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#2a2f3a',
+    borderColor: "#2a2f3a",
     fontSize: 16,
-    color: '#ffffff',
+    color: "#ffffff",
   },
 
   saveBtn: {
-    backgroundColor: '#4f8cff',
+    backgroundColor: "#4f8cff",
     paddingVertical: 16,
     borderRadius: 12,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 8,
     borderWidth: 1,
-    borderColor: '#1b5e20',
+    borderColor: "#1b5e20",
   },
 
   saveText: {
-    color: '#ffffff',
+    color: "#ffffff",
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
