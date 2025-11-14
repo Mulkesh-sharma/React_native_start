@@ -6,8 +6,9 @@ import { useAuth } from '../context/AuthContext';
 // AUTH SCREENS
 import LoginScreen from '../screens/auth/LoginScreen';
 import SignupScreen from '../screens/auth/SignupScreen';
+import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 
-// TABS
+// MAIN TABS
 import BottomTabs from '../screens/navigation/BottomTabs';
 
 // PRODUCT SCREENS
@@ -19,14 +20,14 @@ import EditProductScreen from '../screens/products/EditProductScreen';
 // ADMIN
 import DashboardScreen from '../screens/dashboard/DashboardScreen';
 import ProfileScreen from '../screens/admin/ProfileScreen';
+import ProfileScreenMain from '../screens/admin/ProfileScreenMain';
 
 import { Product } from '../context/StoreContext';
-import ProfileScreenMain from '../screens/admin/ProfileScreenMain';
-import ForgotPasswordScreen from '../screens/auth/ForgotPasswordScreen';
 
 export type RootStackParamList = {
   Login: undefined;
   Signup: undefined;
+  ForgotPassword: undefined;
 
   MainTabs: undefined;
 
@@ -37,7 +38,6 @@ export type RootStackParamList = {
   Profile: undefined;
   Dashboard: undefined;
   ProfileMain: undefined;
-  ForgotPassword: undefined;
 };
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
@@ -50,52 +50,26 @@ const AppNavigator = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       {!token ? (
+        // UNAUTHENTICATED SCREENS
         <>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Signup" component={SignupScreen} />
-          <Stack.Screen
-            name="ForgotPassword"
-            component={ForgotPasswordScreen}
-            options={{ headerShown: false }}
-          />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
         </>
       ) : (
+        // AUTHENTICATED SCREENS
         <>
+          {/* Root screen after login */}
           <Stack.Screen name="MainTabs" component={BottomTabs} />
 
-          <Stack.Screen
-            name="Products"
-            component={ProductsScreen}
-          />
-
-          <Stack.Screen
-            name="ProductDetail"
-            component={ProductDetailScreen}
-          />
-
-          <Stack.Screen
-            name="AddProduct"
-            component={AddProductScreen}
-          />
-
-          <Stack.Screen
-            name="EditProduct"
-            component={EditProductScreen}
-          />
-
-          <Stack.Screen
-            name="Dashboard"
-            component={DashboardScreen}
-          />
-          <Stack.Screen
-            name="Profile"
-            component={ProfileScreen}
-          />
-          <Stack.Screen
-            name="ProfileMain"
-            component={ProfileScreenMain}
-          />
-          
+          {/* Additional Screens */}
+          <Stack.Screen name="Products" component={ProductsScreen} />
+          <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
+          <Stack.Screen name="AddProduct" component={AddProductScreen} />
+          <Stack.Screen name="EditProduct" component={EditProductScreen} />
+          <Stack.Screen name="Dashboard" component={DashboardScreen} />
+          <Stack.Screen name="Profile" component={ProfileScreen} />
+          <Stack.Screen name="ProfileMain" component={ProfileScreenMain} />
         </>
       )}
     </Stack.Navigator>

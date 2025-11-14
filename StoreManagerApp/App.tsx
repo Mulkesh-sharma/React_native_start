@@ -4,6 +4,7 @@ import AppNavigator from "./src/navigation/AppNavigator";
 import { AuthProvider } from "./src/context/AuthContext";
 import { StoreProvider } from "./src/context/StoreContext";
 import Toast from "react-native-toast-message";
+import "./config/googleSignIn";
 
 const App = () => {
   return (

@@ -12,10 +12,14 @@ import {
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../../context/AuthContext";
+import { GoogleSignin } from "@react-native-google-signin/google-signin";
+import AntIcon from "react-native-vector-icons/AntDesign";
+import Toast from 'react-native-toast-message';
+import { BASE_URL } from "../../utils/api";
 
 export default function SignupScreen() {
   const navigation = useNavigation<any>();
-  const { signup } = useAuth();
+  const { signup, googleLogin } = useAuth();
 
   // ------------------------------
   // INPUT STATES
@@ -52,6 +56,59 @@ export default function SignupScreen() {
     ]).start();
   }, []);
 
+  const handleGoogleLogin = async () => {
+    try {
+      setLoading(true);
+
+      await GoogleSignin.hasPlayServices();
+      const userInfo = await GoogleSignin.signIn();
+
+      console.log("FULL user Info:", userInfo);
+
+      const idToken = userInfo?.data?.idToken;
+
+      console.log("ID TOKEN:", idToken);
+
+      if (!idToken) {
+        Toast.show({
+          type: "error",
+          text1: "Google Login Failed",
+          text2: "Could not read Google ID Token",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Use AuthContext googleLogin!
+      const res = await googleLogin(idToken);
+
+      setLoading(false);
+
+      if (!res?.success) {
+        Toast.show({
+          type: "error",
+          text1: "Google Login Failed",
+          text2: res?.message || "Backend error",
+        });
+        return;
+      }
+
+      // ❌ REMOVE ANY navigation.reset / navigation.navigate
+      // Login flow auto-navigates because token changed in AuthContext.
+
+    } catch (err: any) {
+      console.log("Google login error:", err);
+      Toast.show({
+        type: "error",
+        text1: "Google Login Failed",
+        text2: err?.message,
+      });
+      setLoading(false);
+    }
+  };
+
+
+
   // ------------------------------
   // INPUT EVENTS
   // ------------------------------
@@ -68,7 +125,11 @@ export default function SignupScreen() {
   // ------------------------------
   const handleSignup = async () => {
     if (!name || !email || !password) {
-      alert("All fields are required");
+      Toast.show({
+        type: "error",
+        text1: "Validation Error",
+        text2: "All fields are required"
+      });
       return;
     }
 
@@ -79,10 +140,18 @@ export default function SignupScreen() {
     setLoading(false);
 
     if (res?.success) {
-      alert("Account created!");
+      Toast.show({
+        type: "success",
+        text1: "Success",
+        text2: "Account created!"
+      });
       navigation.navigate("Login");
     } else {
-      alert(res.message || "Signup failed");
+      Toast.show({
+        type: "error",
+        text1: "Signup Failed",
+        text2: res.message || "An error occurred during signup"
+      });
     }
   };
 
@@ -195,6 +264,11 @@ export default function SignupScreen() {
             <Text style={styles.link}> Login</Text>
           </Text>
         </TouchableOpacity>
+        <TouchableOpacity style={styles.googleButton} onPress={handleGoogleLogin}>
+          <AntIcon name="google" size={20} color="#fff" />
+          <Text style={styles.googleText}>Login with Google</Text>
+        </TouchableOpacity>
+
       </Animated.View>
     </View>
   );
@@ -282,4 +356,20 @@ const styles = StyleSheet.create({
   switchText: { textAlign: "center", color: "#b6c0cf", fontSize: 14 },
 
   link: { color: "#4f8cff", fontWeight: "700" },
+  googleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#DB4437",
+    paddingVertical: 14,
+    borderRadius: 14,
+    marginTop: 16,
+  },
+  googleText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
+    marginLeft: 10,
+  },
+
 });

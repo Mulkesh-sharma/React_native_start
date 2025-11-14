@@ -2,21 +2,26 @@ import React, { createContext, useContext, useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { apiGet, apiRequest } from "../utils/api";
 
-type User = {
+export type User = {
+  _id?: string;
   name: string;
   email: string;
+  picture?: string | null;
   storeName?: string;
   ownerName?: string;
   storeType?: string;
   phone?: string;
 };
 
+// ---------------------------
+// TYPES
+// ---------------------------
 type AuthContextType = {
-  isLoggedIn: boolean;
+  user: User | null;
   token: string | null;
   loading: boolean;
-  user: User | null;
   login: (email: string, password: string) => Promise<any>;
+  googleLogin: (idToken: string) => Promise<any>;
   signup: (name: string, email: string, password: string) => Promise<any>;
   logout: () => void;
   refreshProfile: () => Promise<void>;
@@ -25,94 +30,115 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+// ---------------------------
+// PROVIDER
+// ---------------------------
+export const AuthProvider = ({ children }: any) => {
+  // ⚠ ALL HOOKS MUST BE AT TOP
   const [token, setToken] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // ----------------------------
-  // LOAD TOKEN & PROFILE ON START
-  // ----------------------------
+  // ---------------------------
+  // LOAD TOKEN ONCE
+  // ---------------------------
   useEffect(() => {
-    (async () => {
-      const savedToken = await AsyncStorage.getItem("token");
-
-      if (savedToken) {
-        setToken(savedToken);
-        setIsLoggedIn(true);
-        await fetchProfile(savedToken);
+    const loadToken = async () => {
+      try {
+        const savedToken = await AsyncStorage.getItem("token");
+        if (savedToken) {
+          setToken(savedToken);
+          await fetchProfile(savedToken);
+        }
+      } catch (e) {
+        console.log("Error loading token:", e);
       }
-
       setLoading(false);
-    })();
+    };
+
+    loadToken();
   }, []);
 
-  // ----------------------------
+  // ---------------------------
   // FETCH PROFILE
-  // ----------------------------
-  const fetchProfile = async (authToken?: string) => {
+  // ---------------------------
+  const fetchProfile = async (authToken: string) => {
     try {
       const res = await apiGet("auth/profile", authToken);
-      if (res?.success) setUser(res.user);
+      if (res?.success) {
+        setUser(res.user); // full user saved
+      }
     } catch (e) {
       console.log("Profile fetch error:", e);
     }
   };
 
   const refreshProfile = async () => {
-    if (!token) return;
-    await fetchProfile(token);
+    if (token) await fetchProfile(token);
   };
 
-  // ----------------------------
-  // LOCAL USER UPDATE
-  // ----------------------------
   const setUserLocally = (data: Partial<User>) => {
     setUser((prev) => ({ ...prev!, ...data }));
   };
 
-  // ----------------------------
-  // LOGIN
-  // ----------------------------
+  // ---------------------------
+  // LOGIN (EMAIL)
+  // ---------------------------
   const login = async (email: string, password: string) => {
     const res = await apiRequest("auth/login", "POST", { email, password });
 
     if (res.success && res.token) {
       await AsyncStorage.setItem("token", res.token);
       setToken(res.token);
-      setIsLoggedIn(true);
-      setUser(res.user);
+      await fetchProfile(res.token);
     }
 
     return res;
   };
 
-  // ----------------------------
-  // SIGNUP
-  // ----------------------------
-  const signup = async (name: string, email: string, password: string) => {
-    return await apiRequest("auth/signup", "POST", { name, email, password });
+  // ---------------------------
+  // GOOGLE LOGIN
+  // ---------------------------
+  const googleLogin = async (idToken: string) => {
+    const res = await apiRequest("auth/google", "POST", { idToken });
+
+    if (res.success && res.token) {
+      await AsyncStorage.setItem("token", res.token);
+      setToken(res.token);
+      await fetchProfile(res.token);
+    }
+
+    return res;
   };
 
-  // ----------------------------
+  // ---------------------------
+  // SIGNUP
+  // ---------------------------
+  const signup = async (name: string, email: string, password: string) => {
+    return await apiRequest("auth/signup", "POST", {
+      name,
+      email,
+      password,
+    });
+  };
+
+  // ---------------------------
   // LOGOUT
-  // ----------------------------
+  // ---------------------------
   const logout = async () => {
     await AsyncStorage.removeItem("token");
     setToken(null);
-    setIsLoggedIn(false);
     setUser(null);
   };
 
   return (
     <AuthContext.Provider
       value={{
-        isLoggedIn,
+        user,
         token,
         loading,
-        user,
         login,
+        googleLogin,
         signup,
         logout,
         refreshProfile,
@@ -124,6 +150,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+// ---------------------------
+// USE AUTH
+// ---------------------------
 export const useAuth = () => {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth must be used inside AuthProvider");
