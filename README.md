@@ -146,6 +146,6 @@ npx react-native start --reset-cache
 
 👨‍💻 Author
 Mulkesh Sharma
-🌐 [https://www.linkedin.com/in/mulkesh-sharma/]
+🌐 [https://www.linkedin.com/in/mulkesh-sharma/]  
 
 ⭐ If you find this project helpful, please consider giving it a star on GitHub!
